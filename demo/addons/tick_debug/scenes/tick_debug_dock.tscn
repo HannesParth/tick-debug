@@ -1,0 +1,31 @@
+[gd_scene format=3 uid="uid://c0hrccl7of5qf"]
+
+[ext_resource type="Script" uid="uid://bfolywrxfc0at" path="res://addons/tick_debug/scripts/tick_debug_dock.gd" id="1_7ujpk"]
+[ext_resource type="PackedScene" uid="uid://v3idjrggp3s2" path="res://addons/tick_debug/scenes/property_element.tscn" id="2_ewa4h"]
+
+[node name="TickDebugDock" type="PanelContainer" unique_id=1240409145 node_paths=PackedStringArray("properties_container", "no_properties_disclaimer")]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_7ujpk")
+property_element_scene = ExtResource("2_ewa4h")
+properties_container = NodePath("MarginContainer/PropertiesVBoxContainer")
+no_properties_disclaimer = NodePath("MarginContainer/NoPropertiesDisclaimer")
+
+[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1291078143]
+layout_mode = 2
+theme_override_constants/margin_left = 4
+theme_override_constants/margin_top = 4
+theme_override_constants/margin_right = 4
+theme_override_constants/margin_bottom = 4
+
+[node name="PropertiesVBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1743996005]
+layout_mode = 2
+
+[node name="NoPropertiesDisclaimer" type="Label" parent="MarginContainer" unique_id=429970845]
+layout_mode = 2
+size_flags_horizontal = 4
+size_flags_vertical = 0
+text = "No Properties"

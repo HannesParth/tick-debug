@@ -1,0 +1,43 @@
+; Engine configuration file.
+; It's best edited using the editor UI and not directly,
+; since the parameters that go here are not all obvious.
+;
+; Format:
+;   [section] ; section goes between []
+;   param=value ; assign values to parameters
+
+config_version=5
+
+[application]
+
+config/name="TickDebug"
+run/main_scene="uid://bcwysj40hgqtn"
+config/features=PackedStringArray("4.6", "Forward Plus")
+config/icon="res://icon.svg"
+
+[autoload]
+
+TickDebug="*uid://cn45nihyx076i"
+
+[debug]
+
+gdscript/warnings/directory_rules={
+"res://addons": 0,
+"res://addons/tick_debug": 1
+}
+gdscript/warnings/untyped_declaration=2
+gdscript/warnings/inferred_declaration=1
+gdscript/warnings/unsafe_property_access=1
+gdscript/warnings/unsafe_method_access=1
+
+[editor_plugins]
+
+enabled=PackedStringArray("res://addons/plugin_reloader/plugin.cfg", "res://addons/tick_debug/plugin.cfg")
+
+[physics]
+
+3d/physics_engine="Jolt Physics"
+
+[rendering]
+
+rendering_device/driver.windows="d3d12"
