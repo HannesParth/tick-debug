@@ -8,6 +8,9 @@ const DEBUGGER_PLUGIN_PATH: String = "res://addons/tick_debug/scripts/tick_debug
 const AUTOLOAD_NAME: StringName = &"TickDebug"
 const AUTOLOAD_PATH: String = "res://addons/tick_debug/scripts/tick_debug.gd"
 
+const TOGGLE_INGAME_PANEL_ACTION: String = "toggle_tick_debug_panel"
+
+
 var dock: EditorDock
 var dock_scene: TiDiEditorDock
 var debugger_plugin: TiDiDebuggerPlugin
@@ -15,10 +18,12 @@ var debugger_plugin: TiDiDebuggerPlugin
 
 func _enable_plugin() -> void:
 	add_autoload_singleton(AUTOLOAD_NAME, AUTOLOAD_PATH)
+	_register_input_actions()
 
 
 func _disable_plugin() -> void:
 	remove_autoload_singleton(AUTOLOAD_NAME)
+	_unregister_input_actions()
 
 
 func _enter_tree() -> void:
@@ -46,3 +51,31 @@ func _exit_tree() -> void:
 	dock.queue_free()
 	dock = null
 	dock_scene = null
+
+
+func _register_input_actions() -> void:
+	var event: InputEventKey = InputEventKey.new()
+	event.keycode = KEY_F
+	event.ctrl_pressed = true
+	
+	# Persist in project.godot (visible in Project Settings)
+	if not ProjectSettings.has_setting("input/" + TOGGLE_INGAME_PANEL_ACTION):
+		ProjectSettings.set_setting("input/" + TOGGLE_INGAME_PANEL_ACTION, {
+			"deadzone": 0.5,
+			"events": [event]
+		})
+		ProjectSettings.save()
+	
+	# Load into InputMap immediately (no restart needed)
+	if not InputMap.has_action(TOGGLE_INGAME_PANEL_ACTION):
+		InputMap.add_action(TOGGLE_INGAME_PANEL_ACTION)
+		InputMap.action_add_event(TOGGLE_INGAME_PANEL_ACTION, event)
+
+
+func _unregister_input_actions() -> void:
+	if ProjectSettings.has_setting("input/" + TOGGLE_INGAME_PANEL_ACTION):
+		ProjectSettings.set_setting("input/" + TOGGLE_INGAME_PANEL_ACTION, null)
+		ProjectSettings.save()
+	
+	if InputMap.has_action(TOGGLE_INGAME_PANEL_ACTION):
+		InputMap.erase_action(TOGGLE_INGAME_PANEL_ACTION)

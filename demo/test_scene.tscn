@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://bcwysj40hgqtn"]
 
 [ext_resource type="Script" uid="uid://chqvuub0aod4" path="res://test_scene.gd" id="1_uhqqe"]
+[ext_resource type="Script" uid="uid://cebbo4cdsrc7d" path="res://addons/tick_debug/scripts/ingame_tick_debug_dock.gd" id="2_ia1lp"]
 
 [node name="TestScene" type="Control" unique_id=977826950]
 layout_mode = 3
@@ -10,3 +11,14 @@ anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_uhqqe")
+
+[node name="CanvasLayer" type="CanvasLayer" parent="." unique_id=267914440]
+process_mode = 4
+visible = false
+
+[node name="Panel" type="Panel" parent="CanvasLayer" unique_id=2057315560]
+offset_left = 37.0
+offset_top = 52.0
+offset_right = 275.0
+offset_bottom = 62.0
+script = ExtResource("2_ia1lp")

@@ -66,7 +66,7 @@ func _process(_p_delta: float) -> void:
 	TickDebug._new_track = false
 
 
-func update_entry(p_id: String, p_value: Variant) -> void:
+func update_entry(p_id: String, p_value: String) -> void:
 	if _elements.has(p_id):
 		_elements[p_id].update(p_value)
 		return
@@ -75,7 +75,10 @@ func update_entry(p_id: String, p_value: Variant) -> void:
 	_elements[p_id] = ele
 
 
-func _create_property_element(p_id: String, p_value: Variant) -> TiDePropertyElement:
+func _create_property_element(
+		p_id: String, 
+		p_value: String
+) -> TiDePropertyElement:
 	var inst: TiDePropertyElement= property_element_scene.instantiate()
 	inst.setup(p_id, p_value)
 	properties_container.add_child(inst)

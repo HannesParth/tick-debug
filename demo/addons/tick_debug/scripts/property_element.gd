@@ -9,16 +9,16 @@ extends Control
 
 var custom_id: String
 
-var _value: Variant
+var _value: String
 
 
-func setup(p_custom_id: String, p_value: Variant) -> void:
+func setup(p_custom_id: String, p_value: String) -> void:
 	custom_id = p_custom_id
 	_name_label.text = p_custom_id.split("::")[1]
 	_value = p_value
-	_value_label.text = str(_value)
+	_value_label.text = p_value
 
 
-func update(p_value: Variant) -> void:
+func update(p_value: String) -> void:
 	_value = p_value
-	_value_label.text = str(_value) if p_value != null else "NULL"
+	_value_label.text = p_value
