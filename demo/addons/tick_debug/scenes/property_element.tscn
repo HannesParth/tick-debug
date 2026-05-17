@@ -30,13 +30,11 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 1
 text = "Property Name"
-clip_text = true
-text_overrun_behavior = 1
+vertical_alignment = 1
 
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=1752321529]
 self_modulate = Color(0.8, 0.8, 0.8, 1)
 layout_mode = 2
-size_flags_horizontal = 3
 theme_override_styles/panel = SubResource("StyleBoxFlat_tu6rc")
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=2056909332]
@@ -50,5 +48,3 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 1
 text = "Property Value"
-clip_text = true
-text_overrun_behavior = 1

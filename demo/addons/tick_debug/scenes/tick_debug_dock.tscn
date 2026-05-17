@@ -7,11 +7,14 @@
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
+offset_right = -949.0
 grow_horizontal = 2
 grow_vertical = 2
+size_flags_horizontal = 0
+size_flags_vertical = 0
 script = ExtResource("1_7ujpk")
 property_element_scene = ExtResource("2_ewa4h")
-properties_container = NodePath("MarginContainer/PropertiesVBoxContainer")
+properties_container = NodePath("MarginContainer/ScrollContainer/PropertiesVBoxContainer")
 no_properties_disclaimer = NodePath("MarginContainer/NoPropertiesDisclaimer")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1291078143]
@@ -21,8 +24,13 @@ theme_override_constants/margin_top = 4
 theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
-[node name="PropertiesVBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1743996005]
+[node name="ScrollContainer" type="ScrollContainer" parent="MarginContainer" unique_id=888273647]
 layout_mode = 2
+draw_focus_border = true
+
+[node name="PropertiesVBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer" unique_id=1743996005]
+layout_mode = 2
+size_flags_horizontal = 0
 
 [node name="NoPropertiesDisclaimer" type="Label" parent="MarginContainer" unique_id=429970845]
 layout_mode = 2

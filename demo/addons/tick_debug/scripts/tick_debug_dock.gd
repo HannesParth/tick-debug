@@ -3,6 +3,7 @@ class_name TiDiEditorDock
 extends Control
 
 
+@export var _run_as_ingame_dock: bool = false
 @export var property_element_scene: PackedScene
 @export var properties_container: VBoxContainer
 @export var no_properties_disclaimer: Label
@@ -25,12 +26,16 @@ func _ready() -> void:
 
 
 func _on_runtime_started() -> void:
+	if _run_as_ingame_dock:
+		return
 	_is_runtime = true
 	_elements.clear()
 	_clear_children()
 
 
 func _on_runtime_stopped() -> void:
+	if _run_as_ingame_dock:
+		return
 	_is_runtime = false
 	_sync_from_editor_autoload()
 
@@ -53,7 +58,7 @@ func on_untracked(p_id: String) -> void:
 
 
 func _process(_p_delta: float) -> void:
-	if !Engine.is_editor_hint():
+	if !Engine.is_editor_hint() && !_run_as_ingame_dock:
 		return
 	
 	_refresh_disclaimer()

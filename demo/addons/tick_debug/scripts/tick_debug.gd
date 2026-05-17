@@ -9,6 +9,19 @@ signal _property_untracked(id: String)
 const INGAME_PANEL_LAYER: int = 99
 const INGAME_PANEL_CREATE_POS: Vector2 = Vector2(30, 30)
 
+# Percentage safety margin of the Debugger Limits
+const DEBUGGER_LIMIT_SAFETY_MARGIN: float = 0.8
+
+# Debugger limits
+# Default values are from network/limits/debugger in Project Settings
+var _max_queued_messages: int = 2048
+var _max_chars_per_second: int = 32768
+
+var _queued_messages: int = 0
+var _chars_this_second: int = 0
+var _last_char_reset_time: float = 0.0
+var _limit_error_pushed: bool = false
+
 
 var _type_formatters: Dictionary = {
 	TYPE_BOOL:
@@ -40,8 +53,18 @@ var _tracked_properties: Dictionary[String, String] = {}
 var _new_track: bool = false
 
 var _ingame_panel_layer: CanvasLayer
-var _ingame_panel: TiDiIngameDock
+var _ingame_panel: TiDiEditorDock
 
+
+func _ready() -> void:
+	_max_chars_per_second = ProjectSettings.get_setting(
+			"network/limits/debugger/max_chars_per_second",
+			_max_chars_per_second
+	)
+	_max_queued_messages = ProjectSettings.get_setting(
+			"network/limits/debugger/max_queued_messages",
+			_max_queued_messages
+	)
 
 # ====== Public API ======
 
@@ -60,7 +83,7 @@ func track(p_value: Variant, p_caller: Node, p_custom_id: StringName) -> void:
 	_new_track = true
 	if !Engine.is_editor_hint():
 		# Runtime: send to editor through debug bridge
-		EngineDebugger.send_message("tick_debug:track", [id, formatted])
+		_send_tracked_message(id, formatted)
 
 
 func untrack(p_caller: Node, p_custom_id: StringName) -> void:
@@ -93,7 +116,10 @@ func untrack(p_caller: Node, p_custom_id: StringName) -> void:
 func register_formatter(p_type_key: Variant, p_callable: Callable) -> void:
 	if typeof(p_type_key) == TYPE_INT:
 		_type_formatters[p_type_key] = p_callable
-	elif typeof(p_type_key) == TYPE_STRING or typeof(p_type_key) == TYPE_STRING_NAME:
+	elif (
+			typeof(p_type_key) == TYPE_STRING 
+			|| typeof(p_type_key) == TYPE_STRING_NAME
+	):
 		_object_formatters[str(p_type_key)] = p_callable
 
 
@@ -136,7 +162,51 @@ func _format_value(p_value: Variant) -> String:
 	return str(p_value)
 
 
+func _send_tracked_message(p_id: String, p_formatted: String) -> void:
+	var now: float = Time.get_ticks_msec() / 1000.0
+
+	# Reset chars-per-second counter every second
+	if now - _last_char_reset_time >= 1.0:
+		_chars_this_second = 0
+		_queued_messages = 0
+		_last_char_reset_time = now
+
+	var message_chars: int = p_id.length() + p_formatted.length()
+	var safe_message_limit: int = int(
+			_max_queued_messages * DEBUGGER_LIMIT_SAFETY_MARGIN
+	)
+	var safe_char_limit: int = int(
+			_max_chars_per_second * DEBUGGER_LIMIT_SAFETY_MARGIN
+	)
+
+	var would_exceed_messages: bool = _queued_messages + 1 > safe_message_limit
+	var would_exceed_chars: bool = (
+			_chars_this_second + message_chars > safe_char_limit
+	)
+
+	if would_exceed_messages || would_exceed_chars:
+		if !_limit_error_pushed:
+			_limit_error_pushed = true
+			var reason: String = (
+					"message queue limit" if would_exceed_messages 
+					else "chars/sec limit"
+			)
+			push_error("[TickDebug]: Debugger %s reached, " % reason
+					+ "suppressing further messages this second. If you want " 
+					+ "the TickDebug editor dock to be accurate, call the track "
+					+ "method less than %s times per second or increase the "
+					+ "network/limits/debugger/max_queued_messages "
+					+ "project setting.")
+		return
+	
+	_queued_messages += 1
+	_chars_this_second += message_chars
+	EngineDebugger.send_message("tick_debug:track", [p_id, p_formatted])
+
+
 func _unhandled_key_input(event: InputEvent) -> void:
+	if Engine.is_editor_hint():
+		return
 	if !event.is_action_pressed(&"toggle_tick_debug_panel"):
 		return
 	
@@ -146,23 +216,29 @@ func _unhandled_key_input(event: InputEvent) -> void:
 			_ingame_panel_layer.queue_free()
 		
 		_ingame_panel_layer = CanvasLayer.new()
-		_ingame_panel = TiDiIngameDock.new()
+		var scene: PackedScene = load(
+				"res://addons/tick_debug/scenes/tick_debug_dock.tscn"
+		)
+		_ingame_panel = scene.instantiate()
 		
 		add_child(_ingame_panel_layer)
 		_ingame_panel_layer.add_child(_ingame_panel)
 		
 		_ingame_panel_layer.layer = INGAME_PANEL_LAYER
+		_ingame_panel._run_as_ingame_dock = true
 		_ingame_panel.process_mode = Node.PROCESS_MODE_INHERIT
 		_ingame_panel.global_position = INGAME_PANEL_CREATE_POS
 		return
 	
 	# Not visible -> show and enable
 	if !_ingame_panel_layer.visible:
+		print("Showing ingame panel")
 		_ingame_panel_layer.show()
 		_ingame_panel_layer.process_mode = Node.PROCESS_MODE_PAUSABLE
 		return
 	
 	# Visible -> hide and disable
 	_ingame_panel_layer.hide()
+	print("Hiding ingame panel")
 	_ingame_panel_layer.process_mode = Node.PROCESS_MODE_DISABLED
 	

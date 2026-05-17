@@ -55,27 +55,34 @@ func _exit_tree() -> void:
 
 func _register_input_actions() -> void:
 	var event: InputEventKey = InputEventKey.new()
-	event.keycode = KEY_F
-	event.ctrl_pressed = true
+	event.keycode = KEY_F4
+	event.ctrl_pressed = false
 	
-	# Persist in project.godot (visible in Project Settings)
-	if not ProjectSettings.has_setting("input/" + TOGGLE_INGAME_PANEL_ACTION):
-		ProjectSettings.set_setting("input/" + TOGGLE_INGAME_PANEL_ACTION, {
+	if !ProjectSettings.has_setting("input/" + TOGGLE_INGAME_PANEL_ACTION):
+		var action_settings: Dictionary = {
 			"deadzone": 0.5,
 			"events": [event]
-		})
+		}
+		ProjectSettings.set_setting(
+				"input/" + TOGGLE_INGAME_PANEL_ACTION, 
+				action_settings
+		)
+		# This tells Godot to treat it as an InputEvent action 
+		# (shows in Project Settings UI)
+		ProjectSettings.set_initial_value(
+				"input/" + TOGGLE_INGAME_PANEL_ACTION, 
+				action_settings
+		)
 		ProjectSettings.save()
 	
-	# Load into InputMap immediately (no restart needed)
-	if not InputMap.has_action(TOGGLE_INGAME_PANEL_ACTION):
-		InputMap.add_action(TOGGLE_INGAME_PANEL_ACTION)
-		InputMap.action_add_event(TOGGLE_INGAME_PANEL_ACTION, event)
+	# Always sync runtime InputMap from ProjectSettings
+	InputMap.load_from_project_settings()
 
 
 func _unregister_input_actions() -> void:
 	if ProjectSettings.has_setting("input/" + TOGGLE_INGAME_PANEL_ACTION):
 		ProjectSettings.set_setting("input/" + TOGGLE_INGAME_PANEL_ACTION, null)
 		ProjectSettings.save()
-	
-	if InputMap.has_action(TOGGLE_INGAME_PANEL_ACTION):
-		InputMap.erase_action(TOGGLE_INGAME_PANEL_ACTION)
+
+	# Reload so the removed action is gone from runtime InputMap too
+	InputMap.load_from_project_settings()
