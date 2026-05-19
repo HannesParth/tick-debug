@@ -3,7 +3,7 @@ class_name TiDiDebuggerPlugin
 extends EditorDebuggerPlugin
 
 
-var dock: TiDiEditorDock
+var dock: TiDeEditorDock
 
 
 func _has_capture(prefix: String) -> bool:

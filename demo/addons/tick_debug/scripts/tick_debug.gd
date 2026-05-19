@@ -53,7 +53,7 @@ var _tracked_properties: Dictionary[String, String] = {}
 var _new_track: bool = false
 
 var _ingame_panel_layer: CanvasLayer
-var _ingame_panel: TiDiEditorDock
+var _ingame_panel: TiDeRuntimeDock
 
 
 func _ready() -> void:
@@ -217,7 +217,7 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		
 		_ingame_panel_layer = CanvasLayer.new()
 		var scene: PackedScene = load(
-				"res://addons/tick_debug/scenes/tick_debug_dock.tscn"
+				"res://addons/tick_debug/scenes/tick_runtime_dock.tscn"
 		)
 		_ingame_panel = scene.instantiate()
 		
@@ -225,7 +225,6 @@ func _unhandled_key_input(event: InputEvent) -> void:
 		_ingame_panel_layer.add_child(_ingame_panel)
 		
 		_ingame_panel_layer.layer = INGAME_PANEL_LAYER
-		_ingame_panel._run_as_ingame_dock = true
 		_ingame_panel.process_mode = Node.PROCESS_MODE_INHERIT
 		_ingame_panel.global_position = INGAME_PANEL_CREATE_POS
 		return

@@ -1,16 +1,15 @@
 @tool
-class_name TiDiEditorDock
-extends Control
+@abstract
+class_name TiDeDock
+extends PanelContainer
 
 
-@export var _run_as_ingame_dock: bool = false
 @export var property_element_scene: PackedScene
 @export var properties_container: VBoxContainer
 @export var no_properties_disclaimer: Label
 
 
 var _elements: Dictionary[String, TiDePropertyElement] = {}
-var _is_runtime: bool = false
 
 
 func _enter_tree() -> void:
@@ -25,30 +24,6 @@ func _ready() -> void:
 	TickDebug._property_untracked.connect(on_untracked)
 
 
-func _on_runtime_started() -> void:
-	if _run_as_ingame_dock:
-		return
-	_is_runtime = true
-	_elements.clear()
-	_clear_children()
-
-
-func _on_runtime_stopped() -> void:
-	if _run_as_ingame_dock:
-		return
-	_is_runtime = false
-	_sync_from_editor_autoload()
-
-
-func _sync_from_editor_autoload() -> void:
-	_elements.clear()
-	_clear_children()
-	
-	for id: String in TickDebug._tracked_properties:
-		update_entry(id, TickDebug._tracked_properties[id])
-	_refresh_disclaimer()
-
-
 func on_untracked(p_id: String) -> void:
 	if !_elements.has(p_id):
 		return
@@ -57,20 +32,9 @@ func on_untracked(p_id: String) -> void:
 	_refresh_disclaimer()
 
 
-func _process(_p_delta: float) -> void:
-	if !Engine.is_editor_hint() && !_run_as_ingame_dock:
-		return
-	
-	_refresh_disclaimer()
-	if !TickDebug._new_track:
-		return
-	
-	for id: String in TickDebug._tracked_properties:
-		update_entry(id, TickDebug._tracked_properties[id])
-	
-	TickDebug._new_track = false
-
-
+## Updates a property entry. [br]
+## Called by the DebuggerPlugin for the editor dock. [br]
+## Called in _process() for the runtime dock.
 func update_entry(p_id: String, p_value: String) -> void:
 	if _elements.has(p_id):
 		_elements[p_id].update(p_value)

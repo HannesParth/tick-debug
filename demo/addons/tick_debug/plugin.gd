@@ -2,7 +2,7 @@
 extends EditorPlugin
 
 
-const DOCK_PATH: String = "res://addons/tick_debug/scenes/tick_debug_dock.tscn"
+const DOCK_PATH: String = "res://addons/tick_debug/scenes/tick_editor_dock.tscn"
 const DEBUGGER_PLUGIN_PATH: String = "res://addons/tick_debug/scripts/tick_debugger_plugin.gd"
 
 const AUTOLOAD_NAME: StringName = &"TickDebug"
@@ -12,7 +12,7 @@ const TOGGLE_INGAME_PANEL_ACTION: String = "toggle_tick_debug_panel"
 
 
 var dock: EditorDock
-var dock_scene: TiDiEditorDock
+var dock_scene: TiDeEditorDock
 var debugger_plugin: TiDiDebuggerPlugin
 
 

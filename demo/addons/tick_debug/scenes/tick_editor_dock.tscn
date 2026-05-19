@@ -1,17 +1,14 @@
 [gd_scene format=3 uid="uid://c0hrccl7of5qf"]
 
-[ext_resource type="Script" uid="uid://bfolywrxfc0at" path="res://addons/tick_debug/scripts/tick_debug_dock.gd" id="1_7ujpk"]
+[ext_resource type="Script" uid="uid://bfolywrxfc0at" path="res://addons/tick_debug/scripts/tick_editor_dock.gd" id="1_7ujpk"]
 [ext_resource type="PackedScene" uid="uid://v3idjrggp3s2" path="res://addons/tick_debug/scenes/property_element.tscn" id="2_ewa4h"]
 
-[node name="TickDebugDock" type="PanelContainer" unique_id=1240409145 node_paths=PackedStringArray("properties_container", "no_properties_disclaimer")]
+[node name="TickDebugEditorDock" type="PanelContainer" unique_id=1240409145 node_paths=PackedStringArray("properties_container", "no_properties_disclaimer")]
 anchors_preset = 15
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_right = -949.0
 grow_horizontal = 2
 grow_vertical = 2
-size_flags_horizontal = 0
-size_flags_vertical = 0
 script = ExtResource("1_7ujpk")
 property_element_scene = ExtResource("2_ewa4h")
 properties_container = NodePath("MarginContainer/ScrollContainer/PropertiesVBoxContainer")
@@ -30,7 +27,7 @@ draw_focus_border = true
 
 [node name="PropertiesVBoxContainer" type="VBoxContainer" parent="MarginContainer/ScrollContainer" unique_id=1743996005]
 layout_mode = 2
-size_flags_horizontal = 0
+size_flags_horizontal = 3
 
 [node name="NoPropertiesDisclaimer" type="Label" parent="MarginContainer" unique_id=429970845]
 layout_mode = 2
