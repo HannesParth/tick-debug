@@ -240,4 +240,27 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	_ingame_panel_layer.hide()
 	print("Hiding ingame panel")
 	_ingame_panel_layer.process_mode = Node.PROCESS_MODE_DISABLED
+
+
+
+class ValueData:
+	var value: Variant
+	var min_value: Variant
+	var max_value: Variant
+	var average: Variant
 	
+	
+	func _init(p_value: Variant) -> void:
+		value = p_value
+		min_value = p_value
+		max_value = p_value
+		average = p_value
+	
+	
+	func update(p_value: Variant) -> void:
+		value = p_value
+		
+		if p_value < min_value:
+			min_value = p_value
+		if p_value > max_value:
+			max_value = p_value

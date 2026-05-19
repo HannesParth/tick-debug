@@ -1,50 +1,47 @@
 [gd_scene format=3 uid="uid://v3idjrggp3s2"]
 
 [ext_resource type="Script" uid="uid://dxseph8cwbtlt" path="res://addons/tick_debug/scripts/property_element.gd" id="1_tu6rc"]
+[ext_resource type="PackedScene" uid="uid://35xt2gajlbvm" path="res://addons/tick_debug/scenes/prop_ele_title_value_pair.tscn" id="2_ogvl2"]
 
-[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tu6rc"]
-bg_color = Color(0.101960786, 0.101960786, 0.101960786, 1)
-corner_radius_top_left = 4
-corner_radius_top_right = 4
-corner_radius_bottom_right = 4
-corner_radius_bottom_left = 4
-
-[node name="PropertyHBoxContainer" type="HBoxContainer" unique_id=42644675 node_paths=PackedStringArray("_name_label", "_value_label")]
-offset_right = 325.0
-offset_bottom = 23.0
+[node name="PropertyElement" type="PanelContainer" unique_id=1229365093]
+offset_right = 245.0
+offset_bottom = 27.0
 script = ExtResource("1_tu6rc")
-_name_label = NodePath("MarginContainer/ProperyNameLabel")
-_value_label = NodePath("PanelContainer/MarginContainer/PropertyValueLabel")
 
-[node name="MarginContainer" type="MarginContainer" parent="." unique_id=1393234059]
+[node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1964819385]
 layout_mode = 2
-size_flags_horizontal = 3
-theme_override_constants/margin_left = 2
-theme_override_constants/margin_top = 2
-theme_override_constants/margin_right = 2
-theme_override_constants/margin_bottom = 2
 
-[node name="ProperyNameLabel" type="Label" parent="MarginContainer" unique_id=40092711]
-custom_minimum_size = Vector2(50, 0)
+[node name="TitleValuePair" parent="VBoxContainer" unique_id=711104760 instance=ExtResource("2_ogvl2")]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 1
-text = "Property Name"
-vertical_alignment = 1
+_default_title = "Property Name"
+_default_value = "Property Value"
 
-[node name="PanelContainer" type="PanelContainer" parent="." unique_id=1752321529]
-self_modulate = Color(0.8, 0.8, 0.8, 1)
+[node name="SnapshotsMargin" type="MarginContainer" parent="VBoxContainer" unique_id=2071802146]
 layout_mode = 2
-theme_override_styles/panel = SubResource("StyleBoxFlat_tu6rc")
+theme_override_constants/margin_left = 10
 
-[node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=2056909332]
+[node name="SnapshotsFoldable" type="FoldableContainer" parent="VBoxContainer/SnapshotsMargin" unique_id=1460522690]
 layout_mode = 2
-theme_override_constants/margin_left = 2
-theme_override_constants/margin_right = 2
+title = "Snapshots"
+title_text_overrun_behavior = 3
 
-[node name="PropertyValueLabel" type="Label" parent="PanelContainer/MarginContainer" unique_id=1657979241]
-custom_minimum_size = Vector2(50, 0)
+[node name="PairMargin" type="MarginContainer" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable" unique_id=56511460]
 layout_mode = 2
-size_flags_horizontal = 3
-size_flags_vertical = 1
-text = "Property Value"
+
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin" unique_id=1792843388]
+layout_mode = 2
+
+[node name="MinTitleValuePair" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=445592780 instance=ExtResource("2_ogvl2")]
+layout_mode = 2
+_default_title = "Min"
+_default_value = "Property Value"
+
+[node name="MaxTitleValuePair2" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=1421740720 instance=ExtResource("2_ogvl2")]
+layout_mode = 2
+_default_title = "Max"
+_default_value = "Property Value"
+
+[node name="AvgTitleValuePair3" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=1359691079 instance=ExtResource("2_ogvl2")]
+layout_mode = 2
+_default_title = "Average"
+_default_value = "Property Value"
