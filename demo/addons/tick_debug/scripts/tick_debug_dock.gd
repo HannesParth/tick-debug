@@ -35,21 +35,24 @@ func on_untracked(p_id: String) -> void:
 ## Updates a property entry. [br]
 ## Called by the DebuggerPlugin for the editor dock. [br]
 ## Called in _process() for the runtime dock.
-func update_entry(p_id: String, p_value: String) -> void:
-	if _elements.has(p_id):
-		_elements[p_id].update(p_value)
+func update_entry(p_id: String, p_data: TickDebug.ValueData) -> void:
+	if !p_data:
 		return
 	
-	var ele: TiDePropertyElement = _create_property_element(p_id, p_value)
+	if _elements.has(p_id):
+		_elements[p_id].update(p_data)
+		return
+	
+	var ele: TiDePropertyElement = _create_property_element(p_id, p_data)
 	_elements[p_id] = ele
 
 
 func _create_property_element(
 		p_id: String, 
-		p_value: String
+		p_data: TickDebug.ValueData
 ) -> TiDePropertyElement:
 	var inst: TiDePropertyElement= property_element_scene.instantiate()
-	inst.setup(p_id, p_value)
+	inst.setup(p_id, p_data)
 	properties_container.add_child(inst)
 	return inst
 

@@ -3,10 +3,15 @@
 [ext_resource type="Script" uid="uid://dxseph8cwbtlt" path="res://addons/tick_debug/scripts/property_element.gd" id="1_tu6rc"]
 [ext_resource type="PackedScene" uid="uid://35xt2gajlbvm" path="res://addons/tick_debug/scenes/prop_ele_title_value_pair.tscn" id="2_ogvl2"]
 
-[node name="PropertyElement" type="PanelContainer" unique_id=1229365093]
+[node name="PropertyElement" type="PanelContainer" unique_id=1229365093 node_paths=PackedStringArray("_property_title_value", "_snapshots_foldout", "_min_value", "_max_value", "_average_value")]
 offset_right = 245.0
 offset_bottom = 27.0
 script = ExtResource("1_tu6rc")
+_property_title_value = NodePath("VBoxContainer/TitleValuePair")
+_snapshots_foldout = NodePath("VBoxContainer/SnapshotsMargin/SnapshotsFoldable")
+_min_value = NodePath("VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer/MinTitleValuePair")
+_max_value = NodePath("VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer/MaxTitleValuePair")
+_average_value = NodePath("VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer/AvgTitleValuePair")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1964819385]
 layout_mode = 2
@@ -36,12 +41,12 @@ layout_mode = 2
 _default_title = "Min"
 _default_value = "Property Value"
 
-[node name="MaxTitleValuePair2" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=1421740720 instance=ExtResource("2_ogvl2")]
+[node name="MaxTitleValuePair" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=1421740720 instance=ExtResource("2_ogvl2")]
 layout_mode = 2
 _default_title = "Max"
 _default_value = "Property Value"
 
-[node name="AvgTitleValuePair3" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=1359691079 instance=ExtResource("2_ogvl2")]
+[node name="AvgTitleValuePair" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=1359691079 instance=ExtResource("2_ogvl2")]
 layout_mode = 2
 _default_title = "Average"
 _default_value = "Property Value"

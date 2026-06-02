@@ -49,7 +49,7 @@ var _type_formatters: Dictionary = {
 
 var _object_formatters: Dictionary[String, Callable] = {}
 
-var _tracked_properties: Dictionary[String, String] = {}
+var _tracked_properties: Dictionary[String, ValueData] = {}
 var _new_track: bool = false
 
 var _ingame_panel_layer: CanvasLayer
@@ -74,8 +74,13 @@ func _ready() -> void:
 # signal, which could easily be triggered tens of times per frame?
 func track(p_value: Variant, p_caller: Node, p_custom_id: StringName) -> void:
 	var id: String = _build_property_id(p_caller, p_custom_id)
-	var formatted: String = _format_value(p_value)
-	_tracked_properties[id] = formatted
+	var data: ValueData
+	if _tracked_properties.has(id):
+		data = _tracked_properties[id]
+		data.update(p_value)
+	else:
+		data = ValueData.new(p_value)
+		_tracked_properties[id] = data
 	
 	# Always: set flag
 	# Used by editor dock at editor time
@@ -83,7 +88,7 @@ func track(p_value: Variant, p_caller: Node, p_custom_id: StringName) -> void:
 	_new_track = true
 	if !Engine.is_editor_hint():
 		# Runtime: send to editor through debug bridge
-		_send_tracked_message(id, formatted)
+		_send_tracked_message(id, data)
 
 
 func untrack(p_caller: Node, p_custom_id: StringName) -> void:
@@ -162,7 +167,7 @@ func _format_value(p_value: Variant) -> String:
 	return str(p_value)
 
 
-func _send_tracked_message(p_id: String, p_formatted: String) -> void:
+func _send_tracked_message(p_id: String, p_data: ValueData) -> void:
 	var now: float = Time.get_ticks_msec() / 1000.0
 
 	# Reset chars-per-second counter every second
@@ -170,8 +175,9 @@ func _send_tracked_message(p_id: String, p_formatted: String) -> void:
 		_chars_this_second = 0
 		_queued_messages = 0
 		_last_char_reset_time = now
-
-	var message_chars: int = p_id.length() + p_formatted.length()
+	
+	var payload: Array[String] = p_data.payload()
+	var message_chars: int = p_id.length() + get_array_string_length(payload)
 	var safe_message_limit: int = int(
 			_max_queued_messages * DEBUGGER_LIMIT_SAFETY_MARGIN
 	)
@@ -201,7 +207,14 @@ func _send_tracked_message(p_id: String, p_formatted: String) -> void:
 	
 	_queued_messages += 1
 	_chars_this_second += message_chars
-	EngineDebugger.send_message("tick_debug:track", [p_id, p_formatted])
+	EngineDebugger.send_message("tick_debug:track", [p_id, payload])
+
+
+func get_array_string_length(p_array: Array[String]) -> int:
+	return p_array.reduce(
+			func(p_acc: int, p_val: String) -> int:
+				return p_acc + p_val.length()
+	, 0)
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -249,12 +262,18 @@ class ValueData:
 	var max_value: Variant
 	var average: Variant
 	
+	var _history: Array[Variant] = []
+	
 	
 	func _init(p_value: Variant) -> void:
 		value = p_value
 		min_value = p_value
 		max_value = p_value
 		average = p_value
+		
+		if p_value is float || p_value is int:
+			_history.append(p_value)
+
 	
 	
 	func update(p_value: Variant) -> void:
@@ -264,3 +283,37 @@ class ValueData:
 			min_value = p_value
 		if p_value > max_value:
 			max_value = p_value
+		
+		# History is empty if value is non-numeric
+		if !_history.is_empty():
+			_history.append(p_value)
+			average = _get_average()
+	
+	
+	## Returns the average of the current history. [br]
+	## Value has to be float or int to work, which is why the
+	## history is kept empty if the value is non-numeric.
+	func _get_average() -> float:
+		if _history.is_empty():
+			return 0.0
+		
+		var sum: float = 0.0
+		var count: int = 0
+		
+		for entry: Variant in _history:
+			sum += float(entry)
+			count += 1
+		
+		if count == 0:
+			return 0.0
+		
+		return sum / float(count)
+	
+	
+	func payload() -> Array[String]:
+		return [
+			TickDebug._format_value(value),
+			TickDebug._format_value(min_value),
+			TickDebug._format_value(max_value),
+			TickDebug._format_value(average),
+		]
