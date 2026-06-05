@@ -15,42 +15,82 @@ var dock: EditorDock
 var dock_scene: TiDeEditorDock
 var debugger_plugin: TiDiDebuggerPlugin
 
+@warning_ignore("inferred_declaration")
+var settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
+
 
 func _enable_plugin() -> void:
 	add_autoload_singleton(AUTOLOAD_NAME, AUTOLOAD_PATH)
-	_register_input_actions()
+	
+	# FIXME: this appears to do nothing
+	#_register_input_actions()
 
 
 func _disable_plugin() -> void:
 	remove_autoload_singleton(AUTOLOAD_NAME)
-	_unregister_input_actions()
+	# Don't remove the project setting's value and input map action,
+	# as the plugin may be re-enabled in the future.
 
 
 func _enter_tree() -> void:
+	settings.setup_settings()
+	settings.rebuild_values()
+	ProjectSettings.settings_changed.connect(_on_project_settings_changed)
+	
+	if settings.get_disable_editor_dock():
+		return
+	
+	_construct_editor_dock()
+	_construct_debugger_plugin()
+
+
+func _on_project_settings_changed() -> void:
+	settings.rebuild_values()
+	
+	if settings.get_disable_editor_dock():
+		_remove_editor_dock()
+	else:
+		if dock == null:
+			_construct_editor_dock()
+		if debugger_plugin == null:
+			_construct_debugger_plugin()
+
+
+func _exit_tree() -> void:
+	_remove_editor_dock()
+
+
+func _construct_editor_dock() -> void:
 	dock_scene = preload(DOCK_PATH).instantiate()
 	
 	dock = EditorDock.new()
 	dock.add_child(dock_scene)
 	dock.title = "Tick Debug"
 	
-	dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_UR
-	dock.available_layouts = EditorDock.DOCK_LAYOUT_FLOATING | EditorDock.DOCK_LAYOUT_VERTICAL
+	dock.default_slot = EditorDock.DOCK_SLOT_RIGHT_UL
+	dock.available_layouts = (
+			EditorDock.DOCK_LAYOUT_FLOATING | EditorDock.DOCK_LAYOUT_VERTICAL
+	)
 	
 	add_dock(dock)
-	
+
+
+func _construct_debugger_plugin() -> void:
 	debugger_plugin = preload(DEBUGGER_PLUGIN_PATH).new()
 	debugger_plugin.dock = dock_scene
 	add_debugger_plugin(debugger_plugin)
 
 
-func _exit_tree() -> void:
-	remove_debugger_plugin(debugger_plugin)
-	debugger_plugin = null
-	
+func _remove_editor_dock() -> void:
 	remove_dock(dock)
 	dock.queue_free()
 	dock = null
 	dock_scene = null
+
+
+func _remove_debugger_plugin() -> void:
+	remove_debugger_plugin(debugger_plugin)
+	debugger_plugin = null
 
 
 func _register_input_actions() -> void:
@@ -64,12 +104,6 @@ func _register_input_actions() -> void:
 			"events": [event]
 		}
 		ProjectSettings.set_setting(
-				"input/" + TOGGLE_INGAME_PANEL_ACTION, 
-				action_settings
-		)
-		# This tells Godot to treat it as an InputEvent action 
-		# (shows in Project Settings UI)
-		ProjectSettings.set_initial_value(
 				"input/" + TOGGLE_INGAME_PANEL_ACTION, 
 				action_settings
 		)

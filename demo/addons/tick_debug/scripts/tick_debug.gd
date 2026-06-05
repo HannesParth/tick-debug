@@ -3,9 +3,14 @@ extends Node
 ## Main Autoload
 
 
+# TODO:
+# - fix runtime dock dragging
+# - fix get disable
+
 signal _property_untracked(id: String)
 
 
+const TOGGLE_INGAME_PANEL_ACTION: String = "toggle_tick_debug_panel"
 const INGAME_PANEL_LAYER: int = 99
 const INGAME_PANEL_CREATE_POS: Vector2 = Vector2(30, 30)
 
@@ -22,6 +27,9 @@ var _chars_this_second: int = 0
 var _last_char_reset_time: float = 0.0
 var _limit_error_pushed: bool = false
 
+
+@warning_ignore("inferred_declaration")
+var _settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
 
 var _type_formatters: Dictionary = {
 	TYPE_BOOL:
@@ -65,6 +73,16 @@ func _ready() -> void:
 			"network/limits/debugger/max_queued_messages",
 			_max_queued_messages
 	)
+	
+	if not InputMap.has_action(TOGGLE_INGAME_PANEL_ACTION):
+		# Create default input action if no user-defined override exists.
+		# We can't do it in the editor plugin's activation code as it doesn't 
+		# seem to work there.
+		InputMap.add_action(TOGGLE_INGAME_PANEL_ACTION)
+		var event: InputEventKey = InputEventKey.new()
+		event.keycode = KEY_F4
+		InputMap.action_add_event(TOGGLE_INGAME_PANEL_ACTION, event)
+
 
 # ====== Public API ======
 
@@ -86,7 +104,7 @@ func track(p_value: Variant, p_caller: Node, p_custom_id: StringName) -> void:
 	# Used by editor dock at editor time
 	# Used by ingame dock at runtime
 	_new_track = true
-	if !Engine.is_editor_hint():
+	if !Engine.is_editor_hint() && !_settings.get_disable_editor_dock():
 		# Runtime: send to editor through debug bridge
 		_send_tracked_message(id, data)
 
@@ -98,7 +116,7 @@ func untrack(p_caller: Node, p_custom_id: StringName) -> void:
 	_tracked_properties.erase(id)
 	_property_untracked.emit(id)
 	
-	if !Engine.is_editor_hint():
+	if !Engine.is_editor_hint() && !_settings.get_disable_editor_dock():
 		EngineDebugger.send_message("tick_debug:untrack", [id])
 
 
@@ -262,7 +280,14 @@ class ValueData:
 	var max_value: Variant
 	var average: Variant
 	
+	@warning_ignore("inferred_declaration")
+	var _settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
+	
+	var _history_size: int = 150
 	var _history: Array[Variant] = []
+	
+	var _average_disabled: bool = false
+	var _graph_disabled: bool = false
 	
 	
 	func _init(p_value: Variant) -> void:
@@ -271,9 +296,12 @@ class ValueData:
 		max_value = p_value
 		average = p_value
 		
-		if p_value is float || p_value is int:
+		_history_size = _settings.get_value_history_size()
+		_average_disabled = _settings.get_disable_average()
+		_graph_disabled = _settings.get_disable_graph()
+		
+		if _is_valid_for_average(p_value):
 			_history.append(p_value)
-
 	
 	
 	func update(p_value: Variant) -> void:
@@ -284,30 +312,51 @@ class ValueData:
 		if p_value > max_value:
 			max_value = p_value
 		
-		# History is empty if value is non-numeric
-		if !_history.is_empty():
-			_history.append(p_value)
+		# History is empty if value is non-numeric.
+		# Don't use history if both average and graph are disabled.
+		if _history.is_empty() || _average_disabled && _graph_disabled:
+			return
+		
+		_history.push_back(p_value)
+		
+		if !_average_disabled:
 			average = _get_average()
+		
+		if _history.size() > _history_size:
+			_history.pop_front()
 	
+	
+	func _is_valid_for_average(p_value: Variant) -> bool:
+		return (
+			p_value is int 
+			|| p_value is float
+			|| p_value is Vector2 
+			|| p_value is Vector3
+		)
 	
 	## Returns the average of the current history. [br]
-	## Value has to be float or int to work, which is why the
-	## history is kept empty if the value is non-numeric.
-	func _get_average() -> float:
+	## Value has to be of a type this function can handle, which is why the
+	## history is kept empty if the value is non-numeric (meaning the
+	## value has to support the same usage of / and +).
+	func _get_average() -> Variant:
 		if _history.is_empty():
 			return 0.0
-		
-		var sum: float = 0.0
-		var count: int = 0
-		
+	
+		var sum: Variant = _get_zero_value(_history[0])
+		var count: int = _history.size()
+	
 		for entry: Variant in _history:
-			sum += float(entry)
-			count += 1
-		
-		if count == 0:
-			return 0.0
-		
+			sum += entry
+	
 		return sum / float(count)
+	
+	
+	func _get_zero_value(p_sample: Variant) -> Variant:
+		if p_sample is Vector3:
+			return Vector3.ZERO
+		if p_sample is Vector2:
+			return Vector2.ZERO
+		return 0.0
 	
 	
 	func payload() -> Array[String]:

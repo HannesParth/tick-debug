@@ -2,16 +2,25 @@
 
 [ext_resource type="Script" uid="uid://dxseph8cwbtlt" path="res://addons/tick_debug/scripts/property_element.gd" id="1_tu6rc"]
 [ext_resource type="PackedScene" uid="uid://35xt2gajlbvm" path="res://addons/tick_debug/scenes/prop_ele_title_value_pair.tscn" id="2_ogvl2"]
+[ext_resource type="Script" uid="uid://nikg1lh1h736" path="res://addons/tick_debug/scripts/graph_simple.gd" id="3_sem7a"]
+[ext_resource type="Theme" uid="uid://samgd877expw" path="res://addons/tick_debug/themes/graph_simple_theme.tres" id="4_abfn8"]
 
-[node name="PropertyElement" type="PanelContainer" unique_id=1229365093 node_paths=PackedStringArray("_property_title_value", "_snapshots_foldout", "_min_value", "_max_value", "_average_value")]
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_abfn8"]
+bg_color = Color(0.9946967, 0.9946967, 0.99469656, 0.2)
+
+[sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_fh8xh"]
+
+[node name="PropertyElement" type="PanelContainer" unique_id=1229365093 node_paths=PackedStringArray("_property_title_value", "_snapshots_foldable", "_min_value", "_max_value", "_average_value", "_graph_foldable", "_graph")]
 offset_right = 245.0
 offset_bottom = 27.0
 script = ExtResource("1_tu6rc")
 _property_title_value = NodePath("VBoxContainer/TitleValuePair")
-_snapshots_foldout = NodePath("VBoxContainer/SnapshotsMargin/SnapshotsFoldable")
-_min_value = NodePath("VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer/MinTitleValuePair")
-_max_value = NodePath("VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer/MaxTitleValuePair")
-_average_value = NodePath("VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer/AvgTitleValuePair")
+_snapshots_foldable = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable")
+_min_value = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer/MinTitleValuePair")
+_max_value = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer/MaxTitleValuePair")
+_average_value = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer/AvgTitleValuePair")
+_graph_foldable = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/GraphFoldable")
+_graph = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/GraphFoldable/HBoxContainer/GraphPanel")
 
 [node name="VBoxContainer" type="VBoxContainer" parent="." unique_id=1964819385]
 layout_mode = 2
@@ -21,32 +30,69 @@ layout_mode = 2
 _default_title = "Property Name"
 _default_value = "Property Value"
 
-[node name="SnapshotsMargin" type="MarginContainer" parent="VBoxContainer" unique_id=2071802146]
+[node name="ExtraInfoMargin" type="MarginContainer" parent="VBoxContainer" unique_id=2071802146]
 layout_mode = 2
 theme_override_constants/margin_left = 10
 
-[node name="SnapshotsFoldable" type="FoldableContainer" parent="VBoxContainer/SnapshotsMargin" unique_id=1460522690]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/ExtraInfoMargin" unique_id=988692210]
+layout_mode = 2
+
+[node name="SnapshotsFoldable" type="FoldableContainer" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer" unique_id=1460522690]
 layout_mode = 2
 title = "Snapshots"
 title_text_overrun_behavior = 3
 
-[node name="PairMargin" type="MarginContainer" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable" unique_id=56511460]
+[node name="PairMargin" type="MarginContainer" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable" unique_id=56511460]
 layout_mode = 2
 
-[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin" unique_id=1792843388]
+[node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin" unique_id=1792843388]
 layout_mode = 2
 
-[node name="MinTitleValuePair" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=445592780 instance=ExtResource("2_ogvl2")]
+[node name="MinTitleValuePair" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=445592780 instance=ExtResource("2_ogvl2")]
 layout_mode = 2
 _default_title = "Min"
 _default_value = "Property Value"
 
-[node name="MaxTitleValuePair" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=1421740720 instance=ExtResource("2_ogvl2")]
+[node name="MaxTitleValuePair" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=1421740720 instance=ExtResource("2_ogvl2")]
 layout_mode = 2
 _default_title = "Max"
 _default_value = "Property Value"
 
-[node name="AvgTitleValuePair" parent="VBoxContainer/SnapshotsMargin/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=1359691079 instance=ExtResource("2_ogvl2")]
+[node name="AvgTitleValuePair" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=1359691079 instance=ExtResource("2_ogvl2")]
 layout_mode = 2
 _default_title = "Average"
 _default_value = "Property Value"
+
+[node name="GraphFoldable" type="FoldableContainer" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer" unique_id=892660333]
+layout_mode = 2
+title = "Graph"
+
+[node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/GraphFoldable" unique_id=1395072733]
+layout_mode = 2
+
+[node name="GraphPanel" type="Panel" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/GraphFoldable/HBoxContainer" unique_id=583420654 node_paths=PackedStringArray("_min_label", "_max_label")]
+custom_minimum_size = Vector2(200, 60)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxFlat_abfn8")
+script = ExtResource("3_sem7a")
+_min_label = NodePath("../PanelContainer/MinLabel")
+_max_label = NodePath("../PanelContainer/MaxLabel")
+
+[node name="PanelContainer" type="PanelContainer" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/GraphFoldable/HBoxContainer" unique_id=57261868]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBoxEmpty_fh8xh")
+
+[node name="MaxLabel" type="Label" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/GraphFoldable/HBoxContainer/PanelContainer" unique_id=607934201]
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
+theme = ExtResource("4_abfn8")
+text = "Max"
+
+[node name="MinLabel" type="Label" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/GraphFoldable/HBoxContainer/PanelContainer" unique_id=2111952680]
+layout_mode = 2
+size_flags_horizontal = 0
+size_flags_vertical = 8
+theme = ExtResource("4_abfn8")
+text = "Min"
+vertical_alignment = 2
