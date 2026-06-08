@@ -6,6 +6,7 @@ extends Node
 # TODO:
 # - fix runtime dock dragging
 # - fix get disable
+# - add median (ostensibly min + max / 2)
 
 signal _property_untracked(id: String)
 
