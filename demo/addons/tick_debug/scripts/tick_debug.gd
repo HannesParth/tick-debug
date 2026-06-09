@@ -4,8 +4,8 @@ extends Node
 
 
 # TODO:
-# - fix get disable
-# - add median (ostensibly min + max / 2)
+# - test performance impact of disabling editor dock
+# - style?
 
 signal _property_untracked(id: String)
 
@@ -278,6 +278,7 @@ class ValueData:
 	var value: Variant
 	var min_value: Variant
 	var max_value: Variant
+	var midpoint_value: Variant
 	var average: Variant
 	
 	@warning_ignore("inferred_declaration")
@@ -287,6 +288,7 @@ class ValueData:
 	var _history: Array[Variant] = []
 	
 	var _average_disabled: bool = false
+	var _midpoint_disabled: bool = false
 	var _graph_disabled: bool = false
 	
 	
@@ -294,10 +296,12 @@ class ValueData:
 		value = p_value
 		min_value = p_value
 		max_value = p_value
+		midpoint_value = p_value
 		average = p_value
 		
 		_history_size = _settings.get_value_history_size()
 		_average_disabled = _settings.get_disable_average()
+		_midpoint_disabled = _settings.get_disable_midpoint()
 		_graph_disabled = _settings.get_disable_graph()
 		
 		if _is_valid_for_average(p_value):
@@ -306,11 +310,17 @@ class ValueData:
 	
 	func update(p_value: Variant) -> void:
 		value = p_value
+		var minmax_changed: bool = false
 		
 		if p_value < min_value:
 			min_value = p_value
+			minmax_changed = true
 		if p_value > max_value:
 			max_value = p_value
+			minmax_changed = true
+		
+		if minmax_changed && !_midpoint_disabled:
+			midpoint_value = (min_value + max_value) / 2
 		
 		# History is empty if value is non-numeric.
 		# Don't use history if both average and graph are disabled.

@@ -34,7 +34,6 @@ func _disable_plugin() -> void:
 
 func _enter_tree() -> void:
 	settings.setup_settings()
-	settings.rebuild_values()
 	ProjectSettings.settings_changed.connect(_on_project_settings_changed)
 	
 	if settings.get_disable_editor_dock():
@@ -45,8 +44,6 @@ func _enter_tree() -> void:
 
 
 func _on_project_settings_changed() -> void:
-	settings.rebuild_values()
-	
 	if settings.get_disable_editor_dock():
 		_remove_editor_dock()
 	else:

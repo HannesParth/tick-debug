@@ -10,7 +10,7 @@ bg_color = Color(0.9946967, 0.9946967, 0.99469656, 0.2)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_fh8xh"]
 
-[node name="PropertyElement" type="PanelContainer" unique_id=1229365093 node_paths=PackedStringArray("_property_title_value", "_snapshots_foldable", "_min_value", "_max_value", "_average_value", "_graph_foldable", "_graph")]
+[node name="PropertyElement" type="PanelContainer" unique_id=1229365093 node_paths=PackedStringArray("_property_title_value", "_snapshots_foldable", "_min_value", "_max_value", "_midpoint_value", "_average_value", "_graph_foldable", "_graph")]
 offset_right = 245.0
 offset_bottom = 27.0
 mouse_filter = 2
@@ -19,6 +19,7 @@ _property_title_value = NodePath("VBoxContainer/TitleValuePair")
 _snapshots_foldable = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable")
 _min_value = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer/MinTitleValuePair")
 _max_value = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer/MaxTitleValuePair")
+_midpoint_value = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer/MidpointTitleValuePair")
 _average_value = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer/AvgTitleValuePair")
 _graph_foldable = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/GraphFoldable")
 _graph = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/GraphFoldable/HBoxContainer/GraphPanel")
@@ -61,6 +62,11 @@ _default_value = "Minimum Value"
 layout_mode = 2
 _default_title = "Max"
 _default_value = "Maximum Value"
+
+[node name="MidpointTitleValuePair" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=1346095536 instance=ExtResource("2_ogvl2")]
+layout_mode = 2
+_default_title = "Midpoint"
+_default_value = "Value"
 
 [node name="AvgTitleValuePair" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer" unique_id=1359691079 instance=ExtResource("2_ogvl2")]
 layout_mode = 2

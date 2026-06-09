@@ -6,6 +6,7 @@ extends RefCounted
 const KEY_BASE: String = "debug/tick_debug"
 
 const KEY_DISABLE_AVERAGE: String = "%s/disable_average" % KEY_BASE
+const KEY_DISABLE_MIDPOINT: String = "%s/disable_midpoint" % KEY_BASE
 const KEY_DISABLE_SNAPSHOTS: String = "%s/disable_snapshots" % KEY_BASE
 const KEY_DISABLE_GRAPH: String = "%s/disable_graph" % KEY_BASE
 const KEY_DISABLE_EDITOR_DOCK: String = "%s/disable_editor_dock" % KEY_BASE
@@ -16,6 +17,7 @@ const KEY_VALUE_HISTORY_SIZE: String = "%s/value_history_size" % KEY_BASE
 
 const KEY_DEFAULTS: Dictionary[String, Variant] = {
 	KEY_DISABLE_AVERAGE: false,
+	KEY_DISABLE_MIDPOINT: false,
 	KEY_DISABLE_SNAPSHOTS: false,
 	KEY_DISABLE_GRAPH: false,
 	KEY_DISABLE_EDITOR_DOCK: false,
@@ -28,6 +30,8 @@ const KEY_DEFAULTS: Dictionary[String, Variant] = {
 const DESCRIPTIONS: Dictionary[String, String] = {
 	KEY_DISABLE_AVERAGE: 
 		"Disable the display and calculation of average values.",
+	KEY_DISABLE_MIDPOINT:
+		"Disable the display and calculation of midpoint values",
 	KEY_DISABLE_SNAPSHOTS:
 		"Disable the display and calculation of all snapshots, "
 		+ "including the average.",
@@ -44,9 +48,6 @@ const DESCRIPTIONS: Dictionary[String, String] = {
 		+ "graph is determined by this.
 		If both average and graph are disabled, no history is kept.",
 }
-
-
-static var values: Dictionary[String, Variant] = {}
 
 
 static func initialize_setting(
@@ -66,6 +67,11 @@ static func setup_settings() -> void:
 	initialize_setting(
 			KEY_DISABLE_AVERAGE, 
 			KEY_DEFAULTS[KEY_DISABLE_AVERAGE],
+			TYPE_BOOL
+	)
+	initialize_setting(
+			KEY_DISABLE_MIDPOINT,
+			KEY_DEFAULTS[KEY_DISABLE_MIDPOINT],
 			TYPE_BOOL
 	)
 	initialize_setting(
@@ -92,44 +98,43 @@ static func setup_settings() -> void:
 	)
 
 
-static func rebuild_values() -> void:
-	for key: String in KEY_DEFAULTS.keys():
-		var val: Variant = ProjectSettings.get_setting(key, KEY_DEFAULTS[key])
-		values[key] = val
-
-
 static func get_disable_average() -> bool:
-	var dis: bool = values.get(
+	return ProjectSettings.get_setting(
 			KEY_DISABLE_AVERAGE, 
 			KEY_DEFAULTS[KEY_DISABLE_AVERAGE]
 	)
-	#print("Average disabled: ", dis)
-	return dis
+
+
+static func get_disable_midpoint() -> bool:
+	return ProjectSettings.get_setting(
+			KEY_DISABLE_MIDPOINT,
+			KEY_DEFAULTS[KEY_DISABLE_MIDPOINT]
+	)
 
 
 static func get_disable_snapshots() -> bool:
-	return values.get(
+	return ProjectSettings.get_setting(
 			KEY_DISABLE_SNAPSHOTS, 
 			KEY_DEFAULTS[KEY_DISABLE_SNAPSHOTS]
 	)
 
 
 static func get_disable_graph() -> bool:
-	return values.get(
+	return ProjectSettings.get_setting(
 			KEY_DISABLE_GRAPH, 
 			KEY_DEFAULTS[KEY_DISABLE_GRAPH]
 	)
 
 
 static func get_disable_editor_dock() -> bool:
-	return values.get(
+	return ProjectSettings.get_setting(
 			KEY_DISABLE_EDITOR_DOCK,
 			KEY_DEFAULTS[KEY_DISABLE_EDITOR_DOCK]
 	)
 
 
 static func get_value_history_size() -> int:
-	return values.get(
+	return ProjectSettings.get_setting(
 			KEY_VALUE_HISTORY_SIZE, 
 			KEY_DEFAULTS[KEY_VALUE_HISTORY_SIZE]
 	)

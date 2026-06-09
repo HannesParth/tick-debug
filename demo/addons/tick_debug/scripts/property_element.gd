@@ -9,6 +9,7 @@ extends Control
 @export var _snapshots_foldable: FoldableContainer
 @export var _min_value: TiDeTitleValuePair
 @export var _max_value: TiDeTitleValuePair
+@export var _midpoint_value: TiDeTitleValuePair
 @export var _average_value: TiDeTitleValuePair
 
 @export_group("Graph Refs")
@@ -41,9 +42,13 @@ func setup(p_custom_id: String, p_data: TickDebug.ValueData) -> void:
 	if _settings.get_disable_snapshots():
 		_snapshots_foldable.hide()
 		_snapshots_foldable.process_mode = Node.PROCESS_MODE_DISABLED
-	elif _settings.get_disable_average():
-		_average_value.hide()
-		_average_value.process_mode = Node.PROCESS_MODE_DISABLED
+	else:
+		if _settings.get_disable_average():
+			_average_value.hide()
+			_average_value.process_mode = Node.PROCESS_MODE_DISABLED
+		if _settings.get_disable_midpoint():
+			_midpoint_value.hide()
+			_midpoint_value.process_mode = Node.PROCESS_MODE_DISABLED
 	
 	# Set up graph
 	# Don't do graph for editor dock, since sending the data through
@@ -67,6 +72,8 @@ func update(p_data: TickDebug.ValueData) -> void:
 		_max_value.set_value(p_data.max_value)
 		
 		# If not hidden because of setting, see setup
+		if _midpoint_value.visible:
+			_midpoint_value.set_value(p_data.midpoint_value)
 		if _average_value.visible:
 			_average_value.set_value(p_data.average)
 	
