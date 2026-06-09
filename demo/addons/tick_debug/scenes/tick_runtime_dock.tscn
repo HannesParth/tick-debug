@@ -13,8 +13,9 @@ no_properties_disclaimer = NodePath("MarginContainer/NoPropertiesDisclaimer")
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1291078143]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/margin_left = 4
-theme_override_constants/margin_top = 4
+theme_override_constants/margin_top = 24
 theme_override_constants/margin_right = 4
 theme_override_constants/margin_bottom = 4
 
@@ -27,3 +28,4 @@ text = "No Properties"
 [node name="PropertiesVBoxContainer" type="VBoxContainer" parent="MarginContainer" unique_id=1743996005]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2

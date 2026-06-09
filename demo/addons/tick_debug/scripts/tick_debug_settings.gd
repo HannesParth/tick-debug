@@ -103,7 +103,7 @@ static func get_disable_average() -> bool:
 			KEY_DISABLE_AVERAGE, 
 			KEY_DEFAULTS[KEY_DISABLE_AVERAGE]
 	)
-	print("Average disabled: ", dis)
+	#print("Average disabled: ", dis)
 	return dis
 
 

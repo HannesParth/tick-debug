@@ -10,13 +10,17 @@ corner_radius_bottom_right = 4
 corner_radius_bottom_left = 4
 
 [node name="TitleValuePair" type="HBoxContainer" unique_id=711104760 node_paths=PackedStringArray("_title_label", "_value_label")]
+mouse_filter = 2
 script = ExtResource("1_u7f8u")
 _title_label = NodePath("MarginContainer/ProperyNameLabel")
 _value_label = NodePath("PanelContainer/MarginContainer/PropertyValueLabel")
+_default_title = "Property Name"
+_default_value = "Property Value"
 
 [node name="MarginContainer" type="MarginContainer" parent="." unique_id=1034436407]
 layout_mode = 2
 size_flags_horizontal = 3
+mouse_filter = 2
 theme_override_constants/margin_left = 2
 theme_override_constants/margin_top = 2
 theme_override_constants/margin_right = 2
@@ -33,10 +37,12 @@ vertical_alignment = 1
 [node name="PanelContainer" type="PanelContainer" parent="." unique_id=303429293]
 self_modulate = Color(0.8, 0.8, 0.8, 1)
 layout_mode = 2
+mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_tu6rc")
 
 [node name="MarginContainer" type="MarginContainer" parent="PanelContainer" unique_id=1882969790]
 layout_mode = 2
+mouse_filter = 2
 theme_override_constants/margin_left = 2
 theme_override_constants/margin_right = 2
 

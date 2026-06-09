@@ -8,18 +8,25 @@ extends HBoxContainer
 
 @export var _default_title: String:
 	set(value):
-		_title_label.text = value
 		_default_title = value
+		if _title_label != null:
+			_title_label.text = value
 	get:
 		return _title_label.text
 @export var _default_value: String:
 	set(value):
-		_value_label.text = value
 		_default_value = value
+		if _value_label != null:
+			_value_label.text = value
 	get:
 		return _value_label.text
 
 var _raw_value: Variant
+
+
+func _ready() -> void:
+	_title_label.text = _default_title
+	_value_label.text = _default_value
 
 
 func set_title(p_text: String) -> void:
