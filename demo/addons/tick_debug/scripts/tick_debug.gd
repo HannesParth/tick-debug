@@ -4,6 +4,10 @@ extends Node
 
 
 # TODO:
+# - put recommendation somewhere to override _equals, _add etc somewhere
+#   for an object type to work
+# -> I would actually have to integrate that, so average, midpoint and maybe 
+#    graph actually work with that
 # - test performance impact of disabling editor dock
 # - style?
 
@@ -99,6 +103,13 @@ func track(p_value: Variant, p_caller: Node, p_custom_id: StringName) -> void:
 	else:
 		data = ValueData.new(p_value)
 		_tracked_properties[id] = data
+		
+		# Notify user if value type has no formatter
+		if !_has_formatter(p_value):
+			var msg: String = "[TickDebug]: The given value [" + str(p_value)\
+					+ "has no registered formatter. See TickDebug.register_formatter"
+			printerr(msg)
+			push_error(msg)
 	
 	# Always: set flag
 	# Used by editor dock at editor time
@@ -183,6 +194,20 @@ func _format_value(p_value: Variant) -> String:
 	
 	# Last fallback, just let built-in string conversion handle it
 	return str(p_value)
+
+
+func _has_formatter(p_value: Variant) -> bool:
+	var type: int = typeof(p_value)
+	if type == TYPE_NIL:
+		return false
+	elif type == TYPE_OBJECT:
+		var obj: Object = p_value as Object
+		var script: Script = obj.get_script() as Script
+		if script != null && _object_formatters.has(script.get_global_name()):
+			return true
+		return _object_formatters.has(obj.get_class())
+	else:
+		return _type_formatters.has(type)
 
 
 func _send_tracked_message(p_id: String, p_data: ValueData) -> void:
