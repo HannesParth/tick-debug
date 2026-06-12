@@ -51,14 +51,9 @@ func setup(p_custom_id: String, p_data: TickDebug.ValueData) -> void:
 			_midpoint_value.process_mode = Node.PROCESS_MODE_DISABLED
 	
 	# Set up graph
-	# Don't do graph for editor dock, since sending the data through
-	# the EngineDebugger requires us to serialize it and pass a
-	# new ValueData instance every frame, giving the graph no
-	# single instance to track.
 	if (
 			_settings.get_disable_graph()
 			|| !_graph.try_setup(p_data) 
-			|| Engine.is_editor_hint()
 	):
 		_graph_foldable.hide()
 		_graph_foldable.process_mode = Node.PROCESS_MODE_DISABLED

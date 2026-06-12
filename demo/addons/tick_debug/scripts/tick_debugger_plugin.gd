@@ -12,8 +12,8 @@ func _has_capture(prefix: String) -> bool:
 
 func _capture(message: String, data: Array, _session_id: int) -> bool:
 	if message == "tick_debug:track":
-		# data[0] = id, data[1] = payload string array
-		dock.update_entry_with_payload(data[0], data[1])
+		# data[0] = id, data[1] = value
+		TickDebug._track_editor(data[1], data[0])
 		return true
 	elif message == "tick_debug:untrack":
 		dock.on_untracked(data[0])
@@ -24,6 +24,7 @@ func _capture(message: String, data: Array, _session_id: int) -> bool:
 # Called when runtime starts
 func _setup_session(p_session_id: int) -> void:
 	dock._on_runtime_started()
+	TickDebug._clear_tracking()
 	
 	var session: EditorDebuggerSession = get_session(p_session_id)
 	session.stopped.connect(dock._on_runtime_stopped)

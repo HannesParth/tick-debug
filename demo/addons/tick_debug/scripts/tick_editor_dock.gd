@@ -3,6 +3,17 @@ class_name TiDeEditorDock
 extends TiDeDock
 
 
+@export var _clear_button: Button
+
+
+func _ready() -> void:
+	_clear_button.pressed.connect(
+			func() -> void:
+				TickDebug._clear_tracking()
+				refresh()
+				print("[TickDebug]: Tracking cleared!")
+	)
+
 # Called by the DebuggerPlugin
 func _on_runtime_started() -> void:
 	_elements.clear()
@@ -23,15 +34,16 @@ func _sync_from_editor_autoload() -> void:
 	_refresh_disclaimer()
 
 
-# Called by the DebuggerPlugin
-func update_entry_with_payload(
-		p_id: String, 
-		p_value_payload: Array[String]
-) -> void:
-	var data: TickDebug.ValueData = TickDebug.ValueData.new(p_value_payload[0])
-	data.min_value = p_value_payload[1]
-	data.max_value = p_value_payload[2]
-	data.average = p_value_payload[3]
+# Editor TickDebug instance is updated by the DebuggerPlugin
+func _process(_p_delta: float) -> void:
+	if !Engine.is_editor_hint():
+		return
 	
-	super.update_entry(p_id, data)
 	_refresh_disclaimer()
+	if !TickDebug._new_track:
+		return
+	
+	for id: String in TickDebug._tracked_properties:
+		update_entry(id, TickDebug._tracked_properties[id])
+	
+	TickDebug._new_track = false

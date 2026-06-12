@@ -10,6 +10,26 @@ extends Node
 #    graph actually work with that
 # - test performance impact of disabling editor dock
 # - style?
+# - doc comments everywhere
+# - somehow get labels to not decrease in size, or only do so after a few 
+#   seconds (to prevent jittering from rapidly rezising labels)
+# - Add "Clear" button to editor dock, that clears the editor autoload instance
+#   and thus the editor dock
+
+# PERFORMANCE TEST: Disabling editor dock
+# Tracking 5 float and 5 Vector3 values
+# V-Sync disabled
+#
+# With editor dock:
+# - already reached debugger chars/sec limit
+# - 6.16 ms Frame Time
+# - 3.18 ms Script Functions
+# - 1.73 ms "track"
+#
+# Without editor dock:
+# - 6.89 ms Farme Time
+# - 1.44 ms Script Functions
+# - 0.48 ms "track"
 
 signal _property_untracked(id: String)
 
@@ -50,10 +70,10 @@ var _type_formatters: Dictionary = {
 			return p_v,
 	TYPE_VECTOR2:
 		func(p_v: Variant) -> String:
-			return str(p_v),
+			return "(%.2f, %.2f)" % [p_v.x, p_v.y],
 	TYPE_VECTOR3:
 		func(p_v: Variant) -> String:
-			return str(p_v),
+			return "(%.2f, %.2f, %.2f)" % [p_v.x, p_v.y, p_v.z],
 	TYPE_COLOR:
 		func(p_v: Variant) -> String:
 			return str(p_v),
@@ -94,27 +114,20 @@ func _ready() -> void:
 # before the _process of the test scene, so it shows the actual value 
 # 1 frame delayed. Does this have another fix than directly triggering a
 # signal, which could easily be triggered tens of times per frame?
+
+## Sets up a value to be tracked or updates an already tracked value. [br]
+## [br]
+## [param p_value]: The value to track. Make sure it has a registered formatter.
+## For default formatters, see [member TickDebug._type_formatters]. [br]
+## [param p_caller]: The Node calling this method. Just use [code]self[/code].
+## used together with the next parameter to construc the internal ID. [br]
+## [param p_custom_id]: Custom ID to identify this value by. Used together with
+## the caller's instance ID to construct the internal tracking ID. [br]
+## Also used as the display name of the value.
 func track(p_value: Variant, p_caller: Node, p_custom_id: StringName) -> void:
 	var id: String = _build_property_id(p_caller, p_custom_id)
-	var data: ValueData
-	if _tracked_properties.has(id):
-		data = _tracked_properties[id]
-		data.update(p_value)
-	else:
-		data = ValueData.new(p_value)
-		_tracked_properties[id] = data
-		
-		# Notify user if value type has no formatter
-		if !_has_formatter(p_value):
-			var msg: String = "[TickDebug]: The given value [" + str(p_value)\
-					+ "has no registered formatter. See TickDebug.register_formatter"
-			printerr(msg)
-			push_error(msg)
+	var data: ValueData = _track_value(p_value, id)
 	
-	# Always: set flag
-	# Used by editor dock at editor time
-	# Used by ingame dock at runtime
-	_new_track = true
 	if !Engine.is_editor_hint() && !_settings.get_disable_editor_dock():
 		# Runtime: send to editor through debug bridge
 		_send_tracked_message(id, data)
@@ -158,6 +171,41 @@ func register_formatter(p_type_key: Variant, p_callable: Callable) -> void:
 
 
 # ====== Private Methods ======
+
+# Used by the DebuggerPlugin to track a value where the already constructed ID
+# has been sent by the runtime TickDebug instance.
+func _track_editor(p_value: Variant, p_id: StringName) -> void:
+	_track_value(p_value, p_id)
+
+
+func _track_value(p_value: Variant, p_id: StringName) -> ValueData:
+	var data: ValueData
+	if _tracked_properties.has(p_id):
+		data = _tracked_properties[p_id]
+		data.update(p_value)
+	else:
+		data = ValueData.new(p_value)
+		_tracked_properties[p_id] = data
+		
+		# Notify user if value type has no formatter
+		if !_has_formatter(p_value):
+			var msg: String = "[TickDebug]: The given value [" + str(p_value)\
+					+ "has no registered formatter. See TickDebug.register_formatter"
+			printerr(msg)
+			push_error(msg)
+	
+	# Always: set flag
+	# Used by editor dock at editor time
+	# Used by ingame dock at runtime
+	_new_track = true
+	return data
+
+
+# Called by the DebuggerPlugin when runtime is started
+func _clear_tracking() -> void:
+	_tracked_properties.clear()
+	_new_track = false
+
 
 func _build_property_id(p_caller: Node, p_custom_id: StringName) -> String:
 	return "%s::%s" % [p_caller.get_instance_id(), p_custom_id]
@@ -219,8 +267,14 @@ func _send_tracked_message(p_id: String, p_data: ValueData) -> void:
 		_queued_messages = 0
 		_last_char_reset_time = now
 	
-	var payload: Array[String] = p_data.payload()
-	var message_chars: int = p_id.length() + get_array_string_length(payload)
+	var value: Variant
+	if p_data.value is Object:
+		value = _format_value(p_data.value)
+	else:
+		value = p_data.value
+	
+	var val_length: int = (value as String).length() if value is String else 0
+	var message_chars: int = p_id.length() + val_length
 	var safe_message_limit: int = int(
 			_max_queued_messages * DEBUGGER_LIMIT_SAFETY_MARGIN
 	)
@@ -250,14 +304,7 @@ func _send_tracked_message(p_id: String, p_data: ValueData) -> void:
 	
 	_queued_messages += 1
 	_chars_this_second += message_chars
-	EngineDebugger.send_message("tick_debug:track", [p_id, payload])
-
-
-func get_array_string_length(p_array: Array[String]) -> int:
-	return p_array.reduce(
-			func(p_acc: int, p_val: String) -> int:
-				return p_acc + p_val.length()
-	, 0)
+	EngineDebugger.send_message("tick_debug:track", [p_id, value])
 
 
 func _unhandled_key_input(event: InputEvent) -> void:
@@ -393,11 +440,3 @@ class ValueData:
 			return Vector2.ZERO
 		return 0.0
 	
-	
-	func payload() -> Array[String]:
-		return [
-			TickDebug._format_value(value),
-			TickDebug._format_value(min_value),
-			TickDebug._format_value(max_value),
-			TickDebug._format_value(average),
-		]

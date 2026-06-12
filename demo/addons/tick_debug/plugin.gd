@@ -47,9 +47,11 @@ func _on_project_settings_changed() -> void:
 	if settings.get_disable_editor_dock():
 		_remove_editor_dock()
 	else:
-		if dock == null:
+		if dock_scene || dock == null:
 			_construct_editor_dock()
-		if debugger_plugin == null:
+		if debugger_plugin != null:
+			debugger_plugin.dock = dock_scene
+		else:
 			_construct_debugger_plugin()
 
 
@@ -58,6 +60,9 @@ func _exit_tree() -> void:
 
 
 func _construct_editor_dock() -> void:
+	if dock_scene != null:
+		_remove_editor_dock()
+	
 	dock_scene = preload(DOCK_PATH).instantiate()
 	
 	dock = EditorDock.new()
@@ -73,6 +78,9 @@ func _construct_editor_dock() -> void:
 
 
 func _construct_debugger_plugin() -> void:
+	if debugger_plugin != null:
+		_remove_debugger_plugin()
+	
 	debugger_plugin = preload(DEBUGGER_PLUGIN_PATH).new()
 	debugger_plugin.dock = dock_scene
 	add_debugger_plugin(debugger_plugin)

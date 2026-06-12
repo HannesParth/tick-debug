@@ -32,6 +32,20 @@ func on_untracked(p_id: String) -> void:
 	_refresh_disclaimer()
 
 
+## Updates elements of values existing in the tracked properties,
+## and removes other elements, which are not tracked.
+func refresh() -> void:
+	for id: String in TickDebug._tracked_properties.keys():
+		update_entry(id, TickDebug._tracked_properties[id])
+	
+	for id: String in _elements.keys():
+		if !TickDebug._tracked_properties.has(id):
+			_elements[id].queue_free()
+			_elements.erase(id)
+	
+	_refresh_disclaimer()
+
+
 ## Updates a property entry. [br]
 ## Called by the DebuggerPlugin for the editor dock. [br]
 ## Called in _process() for the runtime dock.
