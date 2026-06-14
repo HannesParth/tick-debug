@@ -23,8 +23,9 @@ func _capture(message: String, data: Array, _session_id: int) -> bool:
 
 # Called when runtime starts
 func _setup_session(p_session_id: int) -> void:
-	dock._on_runtime_started()
-	TickDebug._clear_tracking()
-	
 	var session: EditorDebuggerSession = get_session(p_session_id)
+	
+	session.started.connect(TickDebug._clear_tracking)
+	session.started.connect(dock._on_runtime_started)
+	
 	session.stopped.connect(dock._on_runtime_stopped)

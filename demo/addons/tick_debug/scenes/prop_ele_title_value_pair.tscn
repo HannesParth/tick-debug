@@ -1,6 +1,7 @@
 [gd_scene format=3 uid="uid://35xt2gajlbvm"]
 
 [ext_resource type="Script" uid="uid://dt35ptyydig48" path="res://addons/tick_debug/scripts/prop_ele_title_value_pair.gd" id="1_u7f8u"]
+[ext_resource type="Script" uid="uid://b0hstc3u3su1o" path="res://addons/tick_debug/scripts/non_jitter_label.gd" id="2_xf4m3"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_tu6rc"]
 bg_color = Color(0.101960786, 0.101960786, 0.101960786, 1)
@@ -52,3 +53,4 @@ layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 1
 text = "Property Value"
+script = ExtResource("2_xf4m3")

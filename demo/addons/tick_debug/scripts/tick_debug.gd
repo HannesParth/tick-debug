@@ -8,53 +8,58 @@ extends Node
 #   for an object type to work
 # -> I would actually have to integrate that, so average, midpoint and maybe 
 #    graph actually work with that
+
 # - test performance impact of disabling editor dock
+# - also see if the non-jitter labels have a performance impact
 # - style?
 # - doc comments everywhere
-# - somehow get labels to not decrease in size, or only do so after a few 
-#   seconds (to prevent jittering from rapidly rezising labels)
-# - Add "Clear" button to editor dock, that clears the editor autoload instance
-#   and thus the editor dock
+# - test as many types as possible
+# - somehow make descriptions for the project settings easily accessible
+# - the message queue limit just fucking confuses me, big todo for later:
+#   implement Websocket or WebRTC bridge for runtime -> editor communication
 
 # PERFORMANCE TEST: Disabling editor dock
-# Tracking 5 float and 5 Vector3 values
+# DO THIS AGAIN
 # V-Sync disabled
-#
-# With editor dock:
-# - already reached debugger chars/sec limit
-# - 6.16 ms Frame Time
-# - 3.18 ms Script Functions
-# - 1.73 ms "track"
-#
-# Without editor dock:
-# - 6.89 ms Farme Time
-# - 1.44 ms Script Functions
-# - 0.48 ms "track"
 
+
+# Emitted when a property is untracked by the user.
 signal _property_untracked(id: String)
 
 
+## Name of the input action to toggle the runtime panel. [br]
+## Couldn't get adding the input action to the project settings to stick
+## (if it was added, it was only after an additional restart), so now it's added
+## at runtime, and users can manually create one with the same name to 
+## override it.
 const TOGGLE_INGAME_PANEL_ACTION: String = "toggle_tick_debug_panel"
+
+## Layer index the CanvasLayer of the runtime panel is set the when created. [br]
+## Arbitrary high number to keep it on top.
 const INGAME_PANEL_LAYER: int = 99
+
+## Initial position the runtime panel is created at.
 const INGAME_PANEL_CREATE_POS: Vector2 = Vector2(30, 30)
 
-# Percentage safety margin of the Debugger Limits
-const DEBUGGER_LIMIT_SAFETY_MARGIN: float = 0.8
 
-# Debugger limits
-# Default values are from network/limits/debugger in Project Settings
-var _max_queued_messages: int = 2048
-var _max_chars_per_second: int = 32768
+# Maximum number of messages per second from runtime to the editor dock using
+# EngineDebugger.send_message. This is to prevent spam by Godot's 
+# "Too many messages!" error.
+# Set to an initial value here, overriden in _ready() by the value
+# from the TickDebug project settings.
+var _max_messages_per_sec: int = 8000
 
-var _queued_messages: int = 0
-var _chars_this_second: int = 0
-var _last_char_reset_time: float = 0.0
+# Rolling window: track message timestamps to enforce a per-second budget
+var _message_times: Array[float] = []
 var _limit_error_pushed: bool = false
 
 
 @warning_ignore("inferred_declaration")
 var _settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
 
+## Custom formatting functions for non-object types, to convert a value to a 
+## string. Can be extended or overridden with 
+## [method TickDebug.register_formatter].
 var _type_formatters: Dictionary = {
 	TYPE_BOOL:
 		func(p_v: Variant) -> String:
@@ -79,9 +84,17 @@ var _type_formatters: Dictionary = {
 			return str(p_v),
 }
 
+## Custom formatting functions for object types, to convert a value to a string.
+## Can be extended or overridden with [method TickDebug.register_formatter].
 var _object_formatters: Dictionary[String, Callable] = {}
 
+# Collection of tracked properties.
+# Key: The created ID for the value.
+# Value: The ValueData.
 var _tracked_properties: Dictionary[String, ValueData] = {}
+
+# Flag set when a value is tracked (user calls track()).
+# Reset by the debug docks.
 var _new_track: bool = false
 
 var _ingame_panel_layer: CanvasLayer
@@ -89,16 +102,7 @@ var _ingame_panel: TiDeRuntimeDock
 
 
 func _ready() -> void:
-	_max_chars_per_second = ProjectSettings.get_setting(
-			"network/limits/debugger/max_chars_per_second",
-			_max_chars_per_second
-	)
-	_max_queued_messages = ProjectSettings.get_setting(
-			"network/limits/debugger/max_queued_messages",
-			_max_queued_messages
-	)
-	
-	if not InputMap.has_action(TOGGLE_INGAME_PANEL_ACTION):
+	if !InputMap.has_action(TOGGLE_INGAME_PANEL_ACTION):
 		# Create default input action if no user-defined override exists.
 		# We can't do it in the editor plugin's activation code as it doesn't 
 		# seem to work there.
@@ -106,6 +110,9 @@ func _ready() -> void:
 		var event: InputEventKey = InputEventKey.new()
 		event.keycode = KEY_F4
 		InputMap.action_add_event(TOGGLE_INGAME_PANEL_ACTION, event)
+	
+	if !Engine.is_editor_hint():
+		_max_messages_per_sec = _settings.get_max_debugger_msg_per_sec()
 
 
 # ====== Public API ======
@@ -260,12 +267,24 @@ func _has_formatter(p_value: Variant) -> bool:
 
 func _send_tracked_message(p_id: String, p_data: ValueData) -> void:
 	var now: float = Time.get_ticks_msec() / 1000.0
-
-	# Reset chars-per-second counter every second
-	if now - _last_char_reset_time >= 1.0:
-		_chars_this_second = 0
-		_queued_messages = 0
-		_last_char_reset_time = now
+	
+	# Evict timestamps older than 1 second
+	while !_message_times.is_empty() && _message_times[0] < now - 1.0:
+		_message_times.pop_front()
+	
+	if _message_times.size() >= _max_messages_per_sec:
+		if !_limit_error_pushed:
+			_limit_error_pushed = true
+			var elapsed: float = _message_times[-1] - _message_times[0]
+			var estimated_rate: int = roundi(_message_times.size() / elapsed)
+			push_error(
+				"[TickDebug]: Approaching debugger queue limit, suppressing "
+				+ "further messages. Call track() less than %d " % _max_messages_per_sec
+				+ "times per second (current: %d)," % estimated_rate
+				+ "or increase debug/tick_debug/max_debugger_messages_per_second "
+				+ "in Project Settings."
+			)
+		return
 	
 	var value: Variant
 	if p_data.value is Object:
@@ -273,37 +292,7 @@ func _send_tracked_message(p_id: String, p_data: ValueData) -> void:
 	else:
 		value = p_data.value
 	
-	var val_length: int = (value as String).length() if value is String else 0
-	var message_chars: int = p_id.length() + val_length
-	var safe_message_limit: int = int(
-			_max_queued_messages * DEBUGGER_LIMIT_SAFETY_MARGIN
-	)
-	var safe_char_limit: int = int(
-			_max_chars_per_second * DEBUGGER_LIMIT_SAFETY_MARGIN
-	)
-
-	var would_exceed_messages: bool = _queued_messages + 1 > safe_message_limit
-	var would_exceed_chars: bool = (
-			_chars_this_second + message_chars > safe_char_limit
-	)
-
-	if would_exceed_messages || would_exceed_chars:
-		if !_limit_error_pushed:
-			_limit_error_pushed = true
-			var reason: String = (
-					"message queue limit" if would_exceed_messages 
-					else "chars/sec limit"
-			)
-			push_error("[TickDebug]: Debugger %s reached, " % reason
-					+ "suppressing further messages this second. If you want " 
-					+ "the TickDebug editor dock to be accurate, call the track "
-					+ "method less than %s times per second or increase the "
-					+ "network/limits/debugger/max_queued_messages "
-					+ "project setting.")
-		return
-	
-	_queued_messages += 1
-	_chars_this_second += message_chars
+	_message_times.append(now)
 	EngineDebugger.send_message("tick_debug:track", [p_id, value])
 
 

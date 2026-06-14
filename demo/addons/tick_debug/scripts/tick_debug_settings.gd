@@ -14,6 +14,8 @@ const KEY_DISABLE_EDITOR_DOCK: String = "%s/disable_editor_dock" % KEY_BASE
 ## Max size of the history of a value, used for calculating the average
 ## and graph display.
 const KEY_VALUE_HISTORY_SIZE: String = "%s/value_history_size" % KEY_BASE
+const KEY_MAX_DEBUGGER_MSG_PER_SEC: String = \
+		"%s/max_debugger_messages_per_second" % KEY_BASE
 
 const KEY_DEFAULTS: Dictionary[String, Variant] = {
 	KEY_DISABLE_AVERAGE: false,
@@ -22,6 +24,7 @@ const KEY_DEFAULTS: Dictionary[String, Variant] = {
 	KEY_DISABLE_GRAPH: false,
 	KEY_DISABLE_EDITOR_DOCK: false,
 	KEY_VALUE_HISTORY_SIZE: 150,
+	KEY_MAX_DEBUGGER_MSG_PER_SEC: 6144
 }
 
 ## FIXME:
@@ -96,6 +99,13 @@ static func setup_settings() -> void:
 			PROPERTY_HINT_RANGE,
 			"10,400,1,or_greater,prefer_slider,suffix:values"
 	)
+	initialize_setting(
+			KEY_MAX_DEBUGGER_MSG_PER_SEC,
+			KEY_DEFAULTS[KEY_MAX_DEBUGGER_MSG_PER_SEC],
+			TYPE_INT,
+			PROPERTY_HINT_RANGE,
+			"2048,10240,8,or_greater,prefer_slider,suffix:per sec"
+	)
 
 
 static func get_disable_average() -> bool:
@@ -137,4 +147,11 @@ static func get_value_history_size() -> int:
 	return ProjectSettings.get_setting(
 			KEY_VALUE_HISTORY_SIZE, 
 			KEY_DEFAULTS[KEY_VALUE_HISTORY_SIZE]
+	)
+
+
+static func get_max_debugger_msg_per_sec() -> int:
+	return ProjectSettings.get_setting(
+			KEY_MAX_DEBUGGER_MSG_PER_SEC,
+			KEY_DEFAULTS[KEY_MAX_DEBUGGER_MSG_PER_SEC]
 	)
