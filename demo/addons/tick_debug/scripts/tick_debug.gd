@@ -9,10 +9,11 @@ extends Node
 # -> I would actually have to integrate that, so average, midpoint and maybe 
 #    graph actually work with that
 
+# - somehow split value handling by type, to at least get bool and string
+#   and stuff in there
 # - test performance impact of disabling editor dock
 # - also see if the non-jitter labels have a performance impact
 # - style?
-# - doc comments everywhere
 # - test as many types as possible
 # - somehow make descriptions for the project settings easily accessible
 # - the message queue limit just fucking confuses me, big todo for later:
@@ -60,7 +61,7 @@ var _settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd
 ## Custom formatting functions for non-object types, to convert a value to a 
 ## string. Can be extended or overridden with 
 ## [method TickDebug.register_formatter].
-var _type_formatters: Dictionary = {
+var _type_formatters: Dictionary[Variant.Type, Callable] = {
 	TYPE_BOOL:
 		func(p_v: Variant) -> String:
 			return "true" if p_v else "false",
