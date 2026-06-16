@@ -123,6 +123,9 @@ func _ready() -> void:
 # signal, which could easily be triggered tens of times per frame?
 
 ## Sets up a value to be tracked or updates an already tracked value. [br]
+## [b]Note[/b] that "track" does [i]not[/i] mean that the value is automatically
+## tracked after you called this once. Instead, calling this the first time
+## creates a tracking reference, and every subsequent call updates it.
 ## [br]
 ## [param p_value]: The value to track. Make sure it has a registered formatter.
 ## For default formatters, see [member TickDebug._type_formatters]. [br]
@@ -130,25 +133,43 @@ func _ready() -> void:
 ## used together with the next parameter to construc the internal ID. [br]
 ## [param p_custom_id]: Custom ID to identify this value by. Used together with
 ## the caller's instance ID to construct the internal tracking ID. [br]
-## Also used as the display name of the value.
-func track(p_value: Variant, p_caller: Node, p_custom_id: StringName) -> void:
-	var id: String = _build_property_id(p_caller, p_custom_id)
+## Also used as the display name of the value. [br]
+## [br]
+## [b]Returns[/b] the constructed tracking ID for the value.
+func track(p_value: Variant, p_caller: Node, p_custom_id: StringName) -> String:
+	var id: String = _build_tracking_id(p_caller, p_custom_id)
 	var data: ValueData = _track_value(p_value, id)
 	
 	if !Engine.is_editor_hint() && !_settings.get_disable_editor_dock():
 		# Runtime: send to editor through debug bridge
 		_send_tracked_message(id, data)
+	
+	return id
 
 
+## Removes a value from tracking. Needs the same [param p_caller] Node reference
+## and [param p_custom_id] used for tracking the value. [br]
+## [br]
+## To remove the tracking with the constructed tracking ID returned by
+## [method TickDebug.track], use [method TickDebug.untrack_by_constructed_id].
 func untrack(p_caller: Node, p_custom_id: StringName) -> void:
-	var id: String = _build_property_id(p_caller, p_custom_id)
-	if !_tracked_properties.has(id):
+	var id: String = _build_tracking_id(p_caller, p_custom_id)
+	untrack_by_constructed_id(id)
+
+
+## Removes a value from tracking. Needs the constructed tracking ID returned by 
+## [method TickDebug.track]. [br]
+## [br]
+## To remove the tracking with the same parameters as with 
+## [method TickDebug.track], use [method TickDebug.untrack].
+func untrack_by_constructed_id(p_constructed_id: String) -> void:
+	if !_tracked_properties.has(p_constructed_id):
 		return
-	_tracked_properties.erase(id)
-	_property_untracked.emit(id)
+	_tracked_properties.erase(p_constructed_id)
+	_property_untracked.emit(p_constructed_id)
 	
 	if !Engine.is_editor_hint() && !_settings.get_disable_editor_dock():
-		EngineDebugger.send_message("tick_debug:untrack", [id])
+		EngineDebugger.send_message("tick_debug:untrack", [p_constructed_id])
 
 
 ## Registers a formatter to convert the given type to a string. Can be used
@@ -185,6 +206,10 @@ func _track_editor(p_value: Variant, p_id: StringName) -> void:
 	_track_value(p_value, p_id)
 
 
+# Internal method to track a value.
+# [method TickDebug.track] just constructs the tracking ID and calls this.
+# Also used by the DebuggerPlugin to track a value with its constructed ID 
+# directly, which it got from the runtime instance.
 func _track_value(p_value: Variant, p_id: StringName) -> ValueData:
 	var data: ValueData
 	if _tracked_properties.has(p_id):
@@ -208,16 +233,22 @@ func _track_value(p_value: Variant, p_id: StringName) -> ValueData:
 	return data
 
 
-# Called by the DebuggerPlugin when runtime is started
+# Clears tracking.
+# Called by the DebuggerPlugin and editor dock.
 func _clear_tracking() -> void:
 	_tracked_properties.clear()
 	_new_track = false
 
 
-func _build_property_id(p_caller: Node, p_custom_id: StringName) -> String:
+# Constructs the tracking id for a value from the instance id of the caller
+# and the given custom id.
+func _build_tracking_id(p_caller: Node, p_custom_id: StringName) -> String:
 	return "%s::%s" % [p_caller.get_instance_id(), p_custom_id]
 
 
+# Formats a value to a string using a formatter from _type_formatters or
+# _object_formatters.
+# If they have no formatter, just uses str().
 func _format_value(p_value: Variant) -> String:
 	var builtin_type: int = typeof(p_value)
 	
@@ -251,6 +282,8 @@ func _format_value(p_value: Variant) -> String:
 	return str(p_value)
 
 
+# Checks whether the type of the given value has a registered formatter.
+# For objects, checks with the values script global name and class name.
 func _has_formatter(p_value: Variant) -> bool:
 	var type: int = typeof(p_value)
 	if type == TYPE_NIL:
@@ -265,6 +298,10 @@ func _has_formatter(p_value: Variant) -> bool:
 		return _type_formatters.has(type)
 
 
+# Sends a message from runtime to editor using EngineDebugger.send_message().
+# Tracks the amount of messages per second using a rolling window of timestamps,
+# and pushes an error if _max_messages_per_sec is exceeded.
+# This is to prevent triggering Godot's own "Too many messages!" error.
 func _send_tracked_message(p_id: String, p_data: ValueData) -> void:
 	var now: float = Time.get_ticks_msec() / 1000.0
 	
@@ -296,6 +333,9 @@ func _send_tracked_message(p_id: String, p_data: ValueData) -> void:
 	EngineDebugger.send_message("tick_debug:track", [p_id, value])
 
 
+# Toggles the TickDebug ingame panel using the associated input action.
+# If the panel has not been created yet, instantiates it.
+# If it has been created, shows and hides the same instance.
 func _unhandled_key_input(event: InputEvent) -> void:
 	if Engine.is_editor_hint():
 		return
@@ -323,18 +363,18 @@ func _unhandled_key_input(event: InputEvent) -> void:
 	
 	# Not visible -> show and enable
 	if !_ingame_panel_layer.visible:
-		print("Showing ingame panel")
 		_ingame_panel_layer.show()
 		_ingame_panel_layer.process_mode = Node.PROCESS_MODE_PAUSABLE
 		return
 	
 	# Visible -> hide and disable
 	_ingame_panel_layer.hide()
-	print("Hiding ingame panel")
 	_ingame_panel_layer.process_mode = Node.PROCESS_MODE_DISABLED
 
 
-
+## Data class for tracking a value.
+## Calculates all snapshots and keeps the history used for calculating the 
+## average value and for the graph.
 class ValueData:
 	var value: Variant
 	var min_value: Variant
