@@ -9,8 +9,12 @@ extends Node
 # -> I would actually have to integrate that, so average, midpoint and maybe 
 #    graph actually work with that
 
-# - somehow split value handling by type, to at least get bool and string
-#   and stuff in there
+# - when adding a new type to support, I currently need to:
+# 	- add its formatting function to _type_formatters
+#	- add its random value function to the test scene
+#	- add whether it is numeric
+#	- add its average/midpoint calculation if so
+#	-> maybe I can place all this into a resource to have it centralized?
 # - test performance impact of disabling editor dock
 # - also see if the non-jitter labels have a performance impact
 # - style?
@@ -77,9 +81,15 @@ var _type_formatters: Dictionary[Variant.Type, Callable] = {
 	TYPE_VECTOR2:
 		func(p_v: Variant) -> String:
 			return "(%.2f, %.2f)" % [p_v.x, p_v.y],
+	TYPE_VECTOR2I:
+		func(p_v: Variant) -> String:
+			return str(p_v),
 	TYPE_VECTOR3:
 		func(p_v: Variant) -> String:
 			return "(%.2f, %.2f, %.2f)" % [p_v.x, p_v.y, p_v.z],
+	TYPE_VECTOR3I:
+		func(p_v: Variant) -> String:
+			return str(p_v),
 	TYPE_COLOR:
 		func(p_v: Variant) -> String:
 			return str(p_v),
@@ -393,25 +403,35 @@ class ValueData:
 	var _midpoint_disabled: bool = false
 	var _graph_disabled: bool = false
 	
+	var is_numeric: bool = true
+	
 	
 	func _init(p_value: Variant) -> void:
 		value = p_value
-		min_value = p_value
-		max_value = p_value
-		midpoint_value = p_value
-		average = p_value
+		is_numeric = _is_numeric_type(p_value)
 		
 		_history_size = _settings.get_value_history_size()
 		_average_disabled = _settings.get_disable_average()
 		_midpoint_disabled = _settings.get_disable_midpoint()
 		_graph_disabled = _settings.get_disable_graph()
 		
-		if _is_valid_for_average(p_value):
+		if is_numeric:
+			min_value = p_value
+			max_value = p_value
+			midpoint_value = p_value
+			average = p_value
+			
 			_history.append(p_value)
 	
 	
 	func update(p_value: Variant) -> void:
 		value = p_value
+		
+		if is_numeric:
+			_update_numeric(p_value)
+
+
+	func _update_numeric(p_value: Variant) -> void:
 		var minmax_changed: bool = false
 		
 		if p_value < min_value:
@@ -438,12 +458,16 @@ class ValueData:
 			_history.pop_front()
 	
 	
-	func _is_valid_for_average(p_value: Variant) -> bool:
+	# Whether the value is of a type where the numeric snapshots and 
+	# calculations make sense (as opposed to String or Color)
+	func _is_numeric_type(p_value: Variant) -> bool:
 		return (
 			p_value is int 
 			|| p_value is float
-			|| p_value is Vector2 
+			|| p_value is Vector2
+			|| p_value is Vector2i
 			|| p_value is Vector3
+			|| p_value is Vector3i
 		)
 	
 	## Returns the average of the current history. [br]
@@ -466,7 +490,11 @@ class ValueData:
 	func _get_zero_value(p_sample: Variant) -> Variant:
 		if p_sample is Vector3:
 			return Vector3.ZERO
+		if p_sample is Vector3i:
+			return Vector3i.ZERO
 		if p_sample is Vector2:
 			return Vector2.ZERO
+		if p_sample is Vector2i:
+			return Vector2i.ZERO
 		return 0.0
 	

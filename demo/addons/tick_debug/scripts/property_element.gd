@@ -39,7 +39,7 @@ func setup(p_custom_id: String, p_data: TickDebug.ValueData) -> void:
 			_on_folding_changed.bind(_graph_foldable)
 	)
 	
-	if _settings.get_disable_snapshots():
+	if _settings.get_disable_snapshots() || !p_data.is_numeric:
 		_snapshots_foldable.hide()
 		_snapshots_foldable.process_mode = Node.PROCESS_MODE_DISABLED
 	else:

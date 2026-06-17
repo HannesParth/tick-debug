@@ -39,11 +39,22 @@ func _generate_random_value(p_type: Variant.Type) -> Variant:
 					randf_range(-100.0, 100.0), 
 					randf_range(-100.0, 100.0)
 			)
+		TYPE_VECTOR2I:
+			return Vector2i(
+					randi_range(-100, 100),
+					randi_range(-100, 100)
+			)
 		TYPE_VECTOR3:
 			return Vector3(
 					randf_range(-100.0, 100.0), 
 					randf_range(-100.0, 100.0), 
 					randf_range(-100.0, 100.0)
+			)
+		TYPE_VECTOR3I:
+			return Vector3i(
+					randi_range(-100, 100),
+					randi_range(-100, 100),
+					randi_range(-100, 100)
 			)
 		TYPE_COLOR:
 			return Color(randf(), randf(), randf(), 1.0)
