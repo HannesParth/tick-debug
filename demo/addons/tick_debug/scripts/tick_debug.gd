@@ -15,6 +15,12 @@ extends Node
 #	- add whether it is numeric
 #	- add its average/midpoint calculation if so
 #	-> maybe I can place all this into a resource to have it centralized?
+#
+# TickTrackType Resource
+# - function for string formatting, random value, 0 value, is numeric, 
+#   numeric calcs
+# Then look into how to adjust formatter system
+
 # - test performance impact of disabling editor dock
 # - also see if the non-jitter labels have a performance impact
 # - style?

@@ -1,8 +1,8 @@
 [gd_scene format=3 uid="uid://v3idjrggp3s2"]
 
-[ext_resource type="Script" uid="uid://dxseph8cwbtlt" path="res://addons/tick_debug/scripts/property_element.gd" id="1_tu6rc"]
+[ext_resource type="Script" uid="uid://dxseph8cwbtlt" path="res://addons/tick_debug/scripts/ui_components/property_element.gd" id="1_tu6rc"]
 [ext_resource type="PackedScene" uid="uid://35xt2gajlbvm" path="res://addons/tick_debug/scenes/prop_ele_title_value_pair.tscn" id="2_ogvl2"]
-[ext_resource type="Script" uid="uid://nikg1lh1h736" path="res://addons/tick_debug/scripts/graph_simple.gd" id="3_sem7a"]
+[ext_resource type="Script" uid="uid://nikg1lh1h736" path="res://addons/tick_debug/scripts/ui_components/graph_simple.gd" id="3_sem7a"]
 [ext_resource type="Theme" uid="uid://samgd877expw" path="res://addons/tick_debug/themes/graph_simple_theme.tres" id="4_abfn8"]
 
 [sub_resource type="StyleBoxFlat" id="StyleBoxFlat_abfn8"]
