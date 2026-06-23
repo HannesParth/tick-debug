@@ -10,7 +10,6 @@ extends Node
 #    graph actually work with that
 
 
-# - see if I can remove _format_value
 # - add more types
 # - find a string formatting way of making vector strings not jitter
 # - test performance impact of disabling editor dock
@@ -144,8 +143,10 @@ func _register_default_track_types() -> void:
 ## tracked after you called this once. Instead, calling this the first time
 ## creates a tracking reference, and every subsequent call updates it.
 ## [br]
-## [param p_value]: The value to track. Make sure it has a registered formatter.
-## For default formatters, see [member TickDebug._type_formatters]. [br]
+## [param p_value]: The value to track. Make sure it has a registered TrackType.
+## For default formatters, see [code]res://addons/tick_debug/scripts/track_types
+## [/code]. [br]
+## [br]
 ## [param p_caller]: The Node calling this method. Just use [code]self[/code].
 ## used together with the next parameter to construc the internal ID. [br]
 ## [param p_custom_id]: Custom ID to identify this value by. Used together with
@@ -244,6 +245,8 @@ func _build_tracking_id(p_caller: Node, p_custom_id: StringName) -> String:
 # Formats a value to a string using the format() method of a registered 
 # TiDeTrackType.
 # If none is registered, just uses str().
+# Only used as a fallback in cases where the TrackType instance of a ValueData 
+# is not directly accessible.
 func _format_value(p_value: Variant) -> String:
 	var track_type: TiDeTrackType = _find_track_type(p_value)
 	
@@ -321,7 +324,7 @@ func _send_tracked_message(p_id: String, p_data: ValueData) -> void:
 	
 	var value: Variant
 	if p_data.value is Object:
-		value = _format_value(p_data.value)
+		value = p_data.str_format(p_data.value)
 	else:
 		value = p_data.value
 	
@@ -454,6 +457,15 @@ class ValueData:
 		if track_type == null:
 			return false
 		return track_type.supports_numeric()
+	
+	
+	## Safe accessor to [method TiDeTrackType.format] of this Data's TrackType.
+	## Uses [code]str()[/code] if this Data has no TrackType.
+	func str_format(p_value: Variant) -> String:
+		if track_type != null:
+			return track_type.format(p_value)
+		return str(p_value)
+	
 	
 	func is_color() -> bool:
 		return track_type != null && track_type.get_type() == TYPE_COLOR

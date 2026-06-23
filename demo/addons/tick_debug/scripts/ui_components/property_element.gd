@@ -63,21 +63,21 @@ func setup(p_custom_id: String, p_data: TickDebug.ValueData) -> void:
 
 
 func update(p_data: TickDebug.ValueData) -> void:
-	_property_title_value.set_value(p_data.value)
+	_property_title_value.set_value(p_data.str_format(p_data.value))
 	
 	_color_display_rect.visible = p_data.is_color()
 	if _color_display_rect.visible:
 		_color_display_rect.color = p_data.value
 	
 	if _snapshots_foldable.visible && !_snapshots_foldable.folded:
-		_min_value.set_value(p_data.min_value)
-		_max_value.set_value(p_data.max_value)
+		_min_value.set_value(p_data.str_format(p_data.min_value))
+		_max_value.set_value(p_data.str_format(p_data.max_value))
 		
 		# If not hidden because of setting, see setup
 		if _midpoint_value.visible:
-			_midpoint_value.set_value(p_data.midpoint_value)
+			_midpoint_value.set_value(p_data.str_format(p_data.midpoint_value))
 		if _average_value.visible:
-			_average_value.set_value(p_data.average)
+			_average_value.set_value(p_data.str_format(p_data.average))
 	
 	if _graph_foldable.visible && !_graph_foldable.folded:
 		_graph.update()

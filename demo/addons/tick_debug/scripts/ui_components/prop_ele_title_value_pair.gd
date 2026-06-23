@@ -40,6 +40,8 @@ func set_value(p_value: Variant) -> void:
 	if _raw_value == p_value: 
 		return
 	
+	_raw_value = p_value
+	
 	if p_value is String:
 		_value_label.text = p_value
 	else:

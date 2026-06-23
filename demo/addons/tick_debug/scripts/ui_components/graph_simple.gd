@@ -78,7 +78,7 @@ func _update_min_max_labels() -> void:
 	
 	if _current_min != _value.min_value:
 		_current_min = _value.min_value
-		_min_label.text = TickDebug._format_value(_current_min)
+		_min_label.text = _value.str_format(_current_min)
 	if _current_min != _value.max_value:
 		_current_max = _value.max_value
-		_max_label.text = TickDebug._format_value(_current_max)
+		_max_label.text = _value.str_format(_current_max)
