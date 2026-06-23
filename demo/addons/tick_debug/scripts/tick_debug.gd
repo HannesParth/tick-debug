@@ -10,13 +10,9 @@ extends Node
 #    graph actually work with that
 
 
-# - add more types
-# - find a string formatting way of making vector strings not jitter
 # - test performance impact of disabling editor dock
 # - also see if the non-jitter labels have a performance impact
 # - style?
-# - test as many types as possible
-# - somehow make descriptions for the project settings easily accessible
 # - put a disclaimer somewhere that a projet without V-Sync reaches the message
 #   queue limit way faster. Except if the message queue accelerates with it?
 
@@ -28,7 +24,11 @@ extends Node
 # V-Sync disabled
 
 
-# Emitted when a property is untracked by the user.
+## Emitted at the end of a frame, when a tracking value was added or updated 
+## this frame.
+signal _tracking_changed_this_frame()
+
+## Emitted when a property is untracked by the user.
 signal _property_untracked(id: String)
 
 
@@ -131,12 +131,16 @@ func _register_default_track_types() -> void:
 	).new())
 
 
-# ====== Public API ======
+func _process(_delta: float) -> void:
+	_check_for_new_track.call_deferred()
 
-# WARNING, TODO: apparently, the _process of the ingame panel is called 
-# before the _process of the test scene, so it shows the actual value 
-# 1 frame delayed. Does this have another fix than directly triggering a
-# signal, which could easily be triggered tens of times per frame?
+
+func _check_for_new_track() -> void:
+	if _new_track:
+		_tracking_changed_this_frame.emit()
+		_new_track = false
+
+# ====== Public API ======
 
 ## Sets up a value to be tracked or updates an already tracked value. [br]
 ## [b]Note[/b] that "track" does [i]not[/i] mean that the value is automatically

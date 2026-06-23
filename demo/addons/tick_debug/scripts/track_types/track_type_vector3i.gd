@@ -9,7 +9,7 @@ func get_type() -> Variant:
 
 func format(p_value: Variant) -> String:
 	# Pad to 4 chars
-	return "(%4d, %4d, %4d)" % [p_value.x, p_value.y, p_value.z]
+	return "(%4d,\t %4d,\t %4d)" % [p_value.x, p_value.y, p_value.z]
 
 
 func random_value() -> Variant:

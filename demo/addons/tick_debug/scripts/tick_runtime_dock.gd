@@ -8,21 +8,8 @@ var _drag_offset: Vector2 = Vector2.ZERO
 
 
 func _ready() -> void:
+	super._ready()
 	gui_input.connect(_on_gui_input)
-
-
-func _process(_p_delta: float) -> void:
-	if Engine.is_editor_hint():
-		return
-	
-	_refresh_disclaimer()
-	if !TickDebug._new_track:
-		return
-	
-	for id: String in TickDebug._tracked_properties:
-		update_entry(id, TickDebug._tracked_properties[id])
-	
-	TickDebug._new_track = false
 
 
 func _on_gui_input(p_event: InputEvent) -> void:

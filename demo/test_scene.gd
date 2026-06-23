@@ -19,7 +19,8 @@ func _process(_delta: float) -> void:
 	if _test_track_type == null:
 		return
 	
-	TickDebug.track(_test_track_type.random_value(), self, &"Variable Type")
+	var single: Variant = _test_track_type.random_value()
+	TickDebug.track(single, self, &"Variable Type")
 	
 	for i: int in _float_amount:
 		var value: float = randf_range(0, 10)

@@ -27,9 +27,6 @@ const KEY_DEFAULTS: Dictionary[String, Variant] = {
 	KEY_MAX_DEBUGGER_MSG_PER_SEC: 6144
 }
 
-## FIXME:
-## There is currently no way to add descriptions to custom project
-## settings. Find another way to show people these descriptions.
 const DESCRIPTIONS: Dictionary[String, String] = {
 	KEY_DISABLE_AVERAGE: 
 		"Disable the display and calculation of average values.",
@@ -50,6 +47,11 @@ const DESCRIPTIONS: Dictionary[String, String] = {
 		The calculation window of the average and the display window of the "
 		+ "graph is determined by this.
 		If both average and graph are disabled, no history is kept.",
+	KEY_MAX_DEBUGGER_MSG_PER_SEC:
+		"TickDebug uses EngineDebugger.send_message to carry runtime values "
+		+ "to the editor. This message queue has a max size.
+		Exceeding this size triggers errors. To prevent these errors, TickDebug "
+		+ "has this separate limit."
 }
 
 
@@ -60,10 +62,28 @@ static func initialize_setting(
 		hint: int = PROPERTY_HINT_NONE, 
 		hint_string: String = ""
 ) -> void:
+	init_description_workaround(key)
+	
 	if not ProjectSettings.has_setting(key):
 		ProjectSettings.set(key, default_value)
 	ProjectSettings.set_initial_value(key, default_value)
 	ProjectSettings.add_property_info({name=key, type=type, hint=hint, hint_string=hint_string})
+
+
+# As of Godot 4.6.3, setting a description tooltip for custom project 
+# settings is not possible.
+# So, I am testing the workaround of adding the descriptions as settings in the
+# form of multiline Strings.
+static func init_description_workaround(actual_setting_key: String) -> void:
+	var key: String = actual_setting_key + "_description"
+	var value: String = DESCRIPTIONS[actual_setting_key]
+	ProjectSettings.set(key, value)
+	ProjectSettings.set_initial_value(key, value)
+	ProjectSettings.add_property_info({
+		name=key, 
+		type=TYPE_STRING#, 
+		#hint=PROPERTY_HINT_MULTILINE_TEXT
+	})
 
 
 static func setup_settings() -> void:

@@ -21,10 +21,18 @@ func _exit_tree() -> void:
 
 
 func _ready() -> void:
-	TickDebug._property_untracked.connect(on_untracked)
+	TickDebug._tracking_changed_this_frame.connect(_on_tracking_changed)
+	TickDebug._property_untracked.connect(_on_untracked)
 
 
-func on_untracked(p_id: String) -> void:
+func _on_tracking_changed() -> void:
+	for id: String in TickDebug._tracked_properties:
+		update_entry(id, TickDebug._tracked_properties[id])
+	
+	_refresh_disclaimer()
+
+
+func _on_untracked(p_id: String) -> void:
 	if !_elements.has(p_id):
 		return
 	_elements[p_id].queue_free()

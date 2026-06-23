@@ -8,7 +8,7 @@ func get_type() -> Variant:
 
 
 func format(p_value: Variant) -> String:
-	return "(%.2f, %.2f, %.2f)" % [p_value.x, p_value.y, p_value.z]
+	return "(%.2f,\t %.2f,\t %.2f)" % [p_value.x, p_value.y, p_value.z]
 
 
 func random_value() -> Variant:
