@@ -6,10 +6,20 @@ extends Control
 
 @export var _single_test_type: Variant.Type = TYPE_FLOAT
 
+var _test_track_type: TiDeTrackType = null
+
+
+func _ready() -> void:
+	_test_track_type = TickDebug._track_types.get(_single_test_type)
+	if _test_track_type == null:
+		printerr("No registered TrackType for the current test type.")
+
 
 func _process(_delta: float) -> void:
-	var single: Variant = _generate_random_value(_single_test_type)
-	TickDebug.track(single, self, &"Variable Type")
+	if _test_track_type == null:
+		return
+	
+	TickDebug.track(_test_track_type.random_value(), self, &"Variable Type")
 	
 	for i: int in _float_amount:
 		var value: float = randf_range(0, 10)
@@ -22,42 +32,3 @@ func _process(_delta: float) -> void:
 				randf_range(0, 10)
 		)
 		TickDebug.track(value, self, &"Vector3 #" + str(i + 1))
-
-
-func _generate_random_value(p_type: Variant.Type) -> Variant:
-	match p_type:
-		TYPE_BOOL:
-			return bool(randi() % 2)
-		TYPE_INT:
-			return randi_range(-100, 100)
-		TYPE_FLOAT:
-			return randf_range(-100.0, 100.0)
-		TYPE_STRING:
-			return "random_" + str(randi_range(0, 9999))
-		TYPE_VECTOR2:
-			return Vector2(
-					randf_range(-100.0, 100.0), 
-					randf_range(-100.0, 100.0)
-			)
-		TYPE_VECTOR2I:
-			return Vector2i(
-					randi_range(-100, 100),
-					randi_range(-100, 100)
-			)
-		TYPE_VECTOR3:
-			return Vector3(
-					randf_range(-100.0, 100.0), 
-					randf_range(-100.0, 100.0), 
-					randf_range(-100.0, 100.0)
-			)
-		TYPE_VECTOR3I:
-			return Vector3i(
-					randi_range(-100, 100),
-					randi_range(-100, 100),
-					randi_range(-100, 100)
-			)
-		TYPE_COLOR:
-			return Color(randf(), randf(), randf(), 1.0)
-		_:
-			push_warning("No random value implemented for this type")
-			return 0.0

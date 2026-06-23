@@ -10,12 +10,13 @@ bg_color = Color(0.9946967, 0.9946967, 0.99469656, 0.2)
 
 [sub_resource type="StyleBoxEmpty" id="StyleBoxEmpty_fh8xh"]
 
-[node name="PropertyElement" type="PanelContainer" unique_id=1229365093 node_paths=PackedStringArray("_property_title_value", "_snapshots_foldable", "_min_value", "_max_value", "_midpoint_value", "_average_value", "_graph_foldable", "_graph")]
+[node name="PropertyElement" type="PanelContainer" unique_id=1229365093 node_paths=PackedStringArray("_property_title_value", "_color_display_rect", "_snapshots_foldable", "_min_value", "_max_value", "_midpoint_value", "_average_value", "_graph_foldable", "_graph")]
 offset_right = 245.0
 offset_bottom = 27.0
 mouse_filter = 2
 script = ExtResource("1_tu6rc")
 _property_title_value = NodePath("VBoxContainer/TitleValuePair")
+_color_display_rect = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/ColorTypeColorRect")
 _snapshots_foldable = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable")
 _min_value = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer/MinTitleValuePair")
 _max_value = NodePath("VBoxContainer/ExtraInfoMargin/VBoxContainer/SnapshotsFoldable/PairMargin/VBoxContainer/MaxTitleValuePair")
@@ -39,6 +40,13 @@ theme_override_constants/margin_left = 10
 [node name="VBoxContainer" type="VBoxContainer" parent="VBoxContainer/ExtraInfoMargin" unique_id=988692210]
 layout_mode = 2
 mouse_filter = 2
+
+[node name="ColorTypeColorRect" type="ColorRect" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer" unique_id=1273947932]
+visible = false
+custom_minimum_size = Vector2(32, 32)
+layout_mode = 2
+size_flags_horizontal = 8
+size_flags_vertical = 0
 
 [node name="SnapshotsFoldable" type="FoldableContainer" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer" unique_id=1460522690]
 layout_mode = 2

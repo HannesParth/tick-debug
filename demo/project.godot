@@ -31,10 +31,6 @@ gdscript/warnings/unsafe_property_access=1
 gdscript/warnings/unsafe_method_access=1
 tick_debug/max_debugger_messages_per_second=4200
 
-[display]
-
-window/vsync/vsync_mode=0
-
 [editor_plugins]
 
 enabled=PackedStringArray("res://addons/plugin_reloader/plugin.cfg", "res://addons/tick_debug/plugin.cfg")

@@ -5,6 +5,8 @@ extends Control
 
 @export var _property_title_value: TiDeTitleValuePair
 
+@export var _color_display_rect: ColorRect
+
 @export_group("Snapshots Refs")
 @export var _snapshots_foldable: FoldableContainer
 @export var _min_value: TiDeTitleValuePair
@@ -29,6 +31,7 @@ func setup(p_custom_id: String, p_data: TickDebug.ValueData) -> void:
 	_property_title_value.set_title(p_custom_id.split("::")[1])
 	update(p_data)
 	
+	# --- Set up numeric foldables ---
 	_snapshots_foldable.folded = true
 	_graph_foldable.folded = true
 	
@@ -39,7 +42,7 @@ func setup(p_custom_id: String, p_data: TickDebug.ValueData) -> void:
 			_on_folding_changed.bind(_graph_foldable)
 	)
 	
-	if _settings.get_disable_snapshots() || !p_data.is_numeric:
+	if _settings.get_disable_snapshots() || !p_data.supports_numeric():
 		_snapshots_foldable.hide()
 		_snapshots_foldable.process_mode = Node.PROCESS_MODE_DISABLED
 	else:
@@ -50,7 +53,7 @@ func setup(p_custom_id: String, p_data: TickDebug.ValueData) -> void:
 			_midpoint_value.hide()
 			_midpoint_value.process_mode = Node.PROCESS_MODE_DISABLED
 	
-	# Set up graph
+	# --- Set up graph ---
 	if (
 			_settings.get_disable_graph()
 			|| !_graph.try_setup(p_data) 
@@ -61,6 +64,10 @@ func setup(p_custom_id: String, p_data: TickDebug.ValueData) -> void:
 
 func update(p_data: TickDebug.ValueData) -> void:
 	_property_title_value.set_value(p_data.value)
+	
+	_color_display_rect.visible = p_data.is_color()
+	if _color_display_rect.visible:
+		_color_display_rect.color = p_data.value
 	
 	if _snapshots_foldable.visible && !_snapshots_foldable.folded:
 		_min_value.set_value(p_data.min_value)

@@ -9,23 +9,18 @@ extends Node
 # -> I would actually have to integrate that, so average, midpoint and maybe 
 #    graph actually work with that
 
-# - when adding a new type to support, I currently need to:
-# 	- add its formatting function to _type_formatters
-#	- add its random value function to the test scene
-#	- add whether it is numeric
-#	- add its average/midpoint calculation if so
-#	-> maybe I can place all this into a resource to have it centralized?
-#
-# TickTrackType Resource
-# - function for string formatting, random value, 0 value, is numeric, 
-#   numeric calcs
-# Then look into how to adjust formatter system
 
+# - see if I can remove _format_value
+# - add more types
+# - find a string formatting way of making vector strings not jitter
 # - test performance impact of disabling editor dock
 # - also see if the non-jitter labels have a performance impact
 # - style?
 # - test as many types as possible
 # - somehow make descriptions for the project settings easily accessible
+# - put a disclaimer somewhere that a projet without V-Sync reaches the message
+#   queue limit way faster. Except if the message queue accelerates with it?
+
 # - the message queue limit just fucking confuses me, big todo for later:
 #   implement Websocket or WebRTC bridge for runtime -> editor communication
 
@@ -68,42 +63,14 @@ var _limit_error_pushed: bool = false
 @warning_ignore("inferred_declaration")
 var _settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
 
-## Custom formatting functions for non-object types, to convert a value to a 
-## string. Can be extended or overridden with 
-## [method TickDebug.register_formatter].
-var _type_formatters: Dictionary[Variant.Type, Callable] = {
-	TYPE_BOOL:
-		func(p_v: Variant) -> String:
-			return "true" if p_v else "false",
-	TYPE_INT:
-		func(p_v: Variant) -> String:
-			return str(p_v),
-	TYPE_FLOAT:
-		func(p_v: Variant) -> String:
-			return "%.2f" % p_v,
-	TYPE_STRING:
-		func(p_v: Variant) -> String:
-			return p_v,
-	TYPE_VECTOR2:
-		func(p_v: Variant) -> String:
-			return "(%.2f, %.2f)" % [p_v.x, p_v.y],
-	TYPE_VECTOR2I:
-		func(p_v: Variant) -> String:
-			return str(p_v),
-	TYPE_VECTOR3:
-		func(p_v: Variant) -> String:
-			return "(%.2f, %.2f, %.2f)" % [p_v.x, p_v.y, p_v.z],
-	TYPE_VECTOR3I:
-		func(p_v: Variant) -> String:
-			return str(p_v),
-	TYPE_COLOR:
-		func(p_v: Variant) -> String:
-			return str(p_v),
-}
-
-## Custom formatting functions for object types, to convert a value to a string.
-## Can be extended or overridden with [method TickDebug.register_formatter].
-var _object_formatters: Dictionary[String, Callable] = {}
+## Collection of [TiDeTrackType]s, with their type as key. [br]
+## TickDebug uses implementations of this class for proper string formatting
+## and calculations. [br]
+## Register new implementations or override existing ones using
+## [method TickDebug.register_track_type]. Look at 
+## [code]res://addons/tick_debug/scripts/track_types[/code] for existing
+## implementations to use as examples.
+var _track_types: Dictionary[Variant, TiDeTrackType] = {}
 
 # Collection of tracked properties.
 # Key: The created ID for the value.
@@ -118,6 +85,12 @@ var _ingame_panel_layer: CanvasLayer
 var _ingame_panel: TiDeRuntimeDock
 
 
+# ====== Setup ======
+
+func _init() -> void:
+	_register_default_track_types()
+
+
 func _ready() -> void:
 	if !InputMap.has_action(TOGGLE_INGAME_PANEL_ACTION):
 		# Create default input action if no user-defined override exists.
@@ -130,6 +103,33 @@ func _ready() -> void:
 	
 	if !Engine.is_editor_hint():
 		_max_messages_per_sec = _settings.get_max_debugger_msg_per_sec()
+
+
+func _register_default_track_types() -> void:
+	register_track_type(preload(
+			"res://addons/tick_debug/scripts/track_types/track_type_bool.gd"
+	).new())
+	register_track_type(preload(
+			"res://addons/tick_debug/scripts/track_types/track_type_color.gd"
+	).new())
+	register_track_type(preload(
+			"res://addons/tick_debug/scripts/track_types/track_type_float.gd"
+	).new())
+	register_track_type(preload(
+			"res://addons/tick_debug/scripts/track_types/track_type_string.gd"
+	).new())
+	register_track_type(preload(
+			"res://addons/tick_debug/scripts/track_types/track_type_vector2.gd"
+	).new())
+	register_track_type(preload(
+			"res://addons/tick_debug/scripts/track_types/track_type_vector2i.gd"
+	).new())
+	register_track_type(preload(
+			"res://addons/tick_debug/scripts/track_types/track_type_vector3.gd"
+	).new())
+	register_track_type(preload(
+			"res://addons/tick_debug/scripts/track_types/track_type_vector3i.gd"
+	).new())
 
 
 # ====== Public API ======
@@ -189,30 +189,8 @@ func untrack_by_constructed_id(p_constructed_id: String) -> void:
 		EngineDebugger.send_message("tick_debug:untrack", [p_constructed_id])
 
 
-## Registers a formatter to convert the given type to a string. Can be used
-## to override existing formatters. [br]
-## [param p_type_key]: Either a built-in [Variant.Type] from 
-## [annotation @GlobalScope], or a class name as a String. [br]
-## [param p_callable]: The formatting [Callable]. Has to take the value as a 
-## parameter and return a String. [br]
-## Examples: [br]
-## [codeblock]
-## TickDebug.register_formatter("MyEnemyData", func(p_v: Variant) -> String:
-## 	return "Enemy[%s hp=%d]" % [p_v.name, p_v.health]
-## )
-##
-## TickDebug.register_formatter(TYPE_FLOAT, func(p_v: Variant) -> String:
-## 	return "%.2f" % p_v
-## )
-## [/codeblock]
-func register_formatter(p_type_key: Variant, p_callable: Callable) -> void:
-	if typeof(p_type_key) == TYPE_INT:
-		_type_formatters[p_type_key] = p_callable
-	elif (
-			typeof(p_type_key) == TYPE_STRING 
-			|| typeof(p_type_key) == TYPE_STRING_NAME
-	):
-		_object_formatters[str(p_type_key)] = p_callable
+func register_track_type(p_track_type: TiDeTrackType) -> void:
+	_track_types[p_track_type.get_type()] = p_track_type
 
 
 # ====== Private Methods ======
@@ -237,9 +215,9 @@ func _track_value(p_value: Variant, p_id: StringName) -> ValueData:
 		_tracked_properties[p_id] = data
 		
 		# Notify user if value type has no formatter
-		if !_has_formatter(p_value):
-			var msg: String = "[TickDebug]: The given value [" + str(p_value)\
-					+ "has no registered formatter. See TickDebug.register_formatter"
+		if !_has_track_type(p_value):
+			var msg: String = "[TickDebug]: The given value [%s] " % p_value\
+					+ "has no registered Track Type. See TickDebug.register_track_type."
 			printerr(msg)
 			push_error(msg)
 	
@@ -263,56 +241,57 @@ func _build_tracking_id(p_caller: Node, p_custom_id: StringName) -> String:
 	return "%s::%s" % [p_caller.get_instance_id(), p_custom_id]
 
 
-# Formats a value to a string using a formatter from _type_formatters or
-# _object_formatters.
-# If they have no formatter, just uses str().
+# Formats a value to a string using the format() method of a registered 
+# TiDeTrackType.
+# If none is registered, just uses str().
 func _format_value(p_value: Variant) -> String:
-	var builtin_type: int = typeof(p_value)
+	var track_type: TiDeTrackType = _find_track_type(p_value)
 	
-	# Objects: traverse script/class hierarchy
-	if builtin_type == TYPE_OBJECT && p_value != null:
+	if track_type != null:
+		return track_type.format(p_value)
+	
+	# Fallback, just let built-in string conversion handle it
+	return str(p_value)
+
+
+func _find_track_type(p_value: Variant) -> TiDeTrackType:
+	if p_value == null:
+		return null
+	
+	var builtin_type: int = typeof(p_value)
+	if builtin_type == TYPE_NIL:
+		return null
+	
+	if builtin_type == TYPE_OBJECT:
 		var obj: Object = p_value as Object
 		var script: Script = obj.get_script()
 		
 		# Check scripts first, with inheritance
 		while script != null:
 			var script_name: String = script.get_global_name()
-			if script_name != "" and _object_formatters.has(script_name):
-				return _object_formatters[script_name].call(p_value)
+			if script_name != "" && _track_types.has(script_name):
+				return _track_types[(script_name as Variant)]
 			script = script.get_base_script()
 		
 		# Check native class with inheritance
 		var class_name_str: String = obj.get_class()
 		while class_name_str != "":
-			if _object_formatters.has(class_name_str):
-				return _object_formatters[class_name_str].call(p_value)
+			if _track_types.has(class_name_str):
+				return _track_types[(class_name_str as Variant)]
 			class_name_str = ClassDB.get_parent_class(class_name_str)
 		
-		# Fallback for objects
-		return "<No Object Formatter: %s>" % obj.get_class()
-	
 	# Primitive: direct lookup
-	if _type_formatters.has(builtin_type):
-		return (_type_formatters[builtin_type] as Callable).call(p_value)
+	if _track_types.has(builtin_type):
+		return _track_types[(builtin_type as Variant)]
 	
-	# Last fallback, just let built-in string conversion handle it
-	return str(p_value)
+	# No TrackType
+	return null
 
 
-# Checks whether the type of the given value has a registered formatter.
+# Checks whether the type of the given value has a registered TiDeTrackType.
 # For objects, checks with the values script global name and class name.
-func _has_formatter(p_value: Variant) -> bool:
-	var type: int = typeof(p_value)
-	if type == TYPE_NIL:
-		return false
-	elif type == TYPE_OBJECT:
-		var obj: Object = p_value as Object
-		var script: Script = obj.get_script() as Script
-		if script != null && _object_formatters.has(script.get_global_name()):
-			return true
-		return _object_formatters.has(obj.get_class())
-	else:
-		return _type_formatters.has(type)
+func _has_track_type(p_value: Variant) -> bool:
+	return _find_track_type(p_value) != null
 
 
 # Sends a message from runtime to editor using EngineDebugger.send_message().
@@ -399,29 +378,32 @@ class ValueData:
 	var midpoint_value: Variant
 	var average: Variant
 	
-	@warning_ignore("inferred_declaration")
-	var _settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
-	
 	var _history_size: int = 150
 	var _history: Array[Variant] = []
+	
+	@warning_ignore("inferred_declaration")
+	var _settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
 	
 	var _average_disabled: bool = false
 	var _midpoint_disabled: bool = false
 	var _graph_disabled: bool = false
 	
-	var is_numeric: bool = true
+	var track_type: TiDeTrackType = null
 	
 	
 	func _init(p_value: Variant) -> void:
 		value = p_value
-		is_numeric = _is_numeric_type(p_value)
+		track_type = TickDebug._find_track_type(p_value)
 		
 		_history_size = _settings.get_value_history_size()
 		_average_disabled = _settings.get_disable_average()
 		_midpoint_disabled = _settings.get_disable_midpoint()
 		_graph_disabled = _settings.get_disable_graph()
 		
-		if is_numeric:
+		if track_type == null:
+			return
+		
+		if track_type.supports_numeric():
 			min_value = p_value
 			max_value = p_value
 			midpoint_value = p_value
@@ -433,7 +415,10 @@ class ValueData:
 	func update(p_value: Variant) -> void:
 		value = p_value
 		
-		if is_numeric:
+		if track_type == null:
+			return
+		
+		if track_type.supports_numeric():
 			_update_numeric(p_value)
 
 
@@ -448,59 +433,27 @@ class ValueData:
 			minmax_changed = true
 		
 		if minmax_changed && !_midpoint_disabled:
-			midpoint_value = (min_value + max_value) / 2
+			track_type.calc_midpoint(min_value, max_value)
 		
-		# History is empty if value is non-numeric.
 		# Don't use history if both average and graph are disabled.
-		if _history.is_empty() || _average_disabled && _graph_disabled:
+		if _average_disabled && _graph_disabled:
 			return
 		
 		_history.push_back(p_value)
 		
 		if !_average_disabled:
-			average = _get_average()
+			average = track_type.calc_average(_history)
 		
 		if _history.size() > _history_size:
 			_history.pop_front()
 	
 	
-	# Whether the value is of a type where the numeric snapshots and 
-	# calculations make sense (as opposed to String or Color)
-	func _is_numeric_type(p_value: Variant) -> bool:
-		return (
-			p_value is int 
-			|| p_value is float
-			|| p_value is Vector2
-			|| p_value is Vector2i
-			|| p_value is Vector3
-			|| p_value is Vector3i
-		)
+	## Safe accessor to [method TiDeTrackType.supports_numeric] of this Data's
+	## TrackType.
+	func supports_numeric() -> bool:
+		if track_type == null:
+			return false
+		return track_type.supports_numeric()
 	
-	## Returns the average of the current history. [br]
-	## Value has to be of a type this function can handle, which is why the
-	## history is kept empty if the value is non-numeric (meaning the
-	## value has to support the same usage of / and +).
-	func _get_average() -> Variant:
-		if _history.is_empty():
-			return 0.0
-	
-		var sum: Variant = _get_zero_value(_history[0])
-		var count: int = _history.size()
-	
-		for entry: Variant in _history:
-			sum += entry
-	
-		return sum / float(count)
-	
-	
-	func _get_zero_value(p_sample: Variant) -> Variant:
-		if p_sample is Vector3:
-			return Vector3.ZERO
-		if p_sample is Vector3i:
-			return Vector3i.ZERO
-		if p_sample is Vector2:
-			return Vector2.ZERO
-		if p_sample is Vector2i:
-			return Vector2i.ZERO
-		return 0.0
-	
+	func is_color() -> bool:
+		return track_type != null && track_type.get_type() == TYPE_COLOR
