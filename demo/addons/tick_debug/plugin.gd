@@ -13,7 +13,7 @@ const TOGGLE_INGAME_PANEL_ACTION: String = "toggle_tick_debug_panel"
 
 var dock: EditorDock
 var dock_scene: TiDeEditorDock
-var debugger_plugin: TiDiDebuggerPlugin
+var debugger_plugin: EditorDebuggerPlugin
 
 @warning_ignore("inferred_declaration")
 var settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
@@ -21,15 +21,10 @@ var settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd"
 
 func _enable_plugin() -> void:
 	add_autoload_singleton(AUTOLOAD_NAME, AUTOLOAD_PATH)
-	
-	# FIXME: this appears to do nothing
-	#_register_input_actions()
 
 
 func _disable_plugin() -> void:
 	remove_autoload_singleton(AUTOLOAD_NAME)
-	# Don't remove the project setting's value and input map action,
-	# as the plugin may be re-enabled in the future.
 
 
 func _enter_tree() -> void:
@@ -50,7 +45,7 @@ func _on_project_settings_changed() -> void:
 		if dock_scene || dock == null:
 			_construct_editor_dock()
 		if debugger_plugin != null:
-			debugger_plugin.dock = dock_scene
+			debugger_plugin.set(&"dock", dock_scene)
 		else:
 			_construct_debugger_plugin()
 
@@ -82,7 +77,7 @@ func _construct_debugger_plugin() -> void:
 		_remove_debugger_plugin()
 	
 	debugger_plugin = preload(DEBUGGER_PLUGIN_PATH).new()
-	debugger_plugin.dock = dock_scene
+	debugger_plugin.set(&"dock", dock_scene)
 	add_debugger_plugin(debugger_plugin)
 
 
@@ -96,32 +91,3 @@ func _remove_editor_dock() -> void:
 func _remove_debugger_plugin() -> void:
 	remove_debugger_plugin(debugger_plugin)
 	debugger_plugin = null
-
-
-func _register_input_actions() -> void:
-	var event: InputEventKey = InputEventKey.new()
-	event.keycode = KEY_F4
-	event.ctrl_pressed = false
-	
-	if !ProjectSettings.has_setting("input/" + TOGGLE_INGAME_PANEL_ACTION):
-		var action_settings: Dictionary = {
-			"deadzone": 0.5,
-			"events": [event]
-		}
-		ProjectSettings.set_setting(
-				"input/" + TOGGLE_INGAME_PANEL_ACTION, 
-				action_settings
-		)
-		ProjectSettings.save()
-	
-	# Always sync runtime InputMap from ProjectSettings
-	InputMap.load_from_project_settings()
-
-
-func _unregister_input_actions() -> void:
-	if ProjectSettings.has_setting("input/" + TOGGLE_INGAME_PANEL_ACTION):
-		ProjectSettings.set_setting("input/" + TOGGLE_INGAME_PANEL_ACTION, null)
-		ProjectSettings.save()
-
-	# Reload so the removed action is gone from runtime InputMap too
-	InputMap.load_from_project_settings()

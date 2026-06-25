@@ -65,7 +65,7 @@ func setup(p_custom_id: String, p_data: TickDebug.ValueData) -> void:
 func update(p_data: TickDebug.ValueData) -> void:
 	_property_title_value.set_value(p_data.str_format(p_data.value))
 	
-	_color_display_rect.visible = p_data.is_color()
+	_color_display_rect.visible = typeof(p_data.value) == TYPE_COLOR
 	if _color_display_rect.visible:
 		_color_display_rect.color = p_data.value
 	

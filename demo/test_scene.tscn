@@ -11,4 +11,4 @@ grow_horizontal = 2
 grow_vertical = 2
 script = ExtResource("1_uhqqe")
 _vector3_amount = 0
-_single_test_type = 9
+_single_test_type = 20

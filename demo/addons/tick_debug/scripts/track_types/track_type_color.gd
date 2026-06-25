@@ -8,6 +8,8 @@ func get_type() -> Variant:
 
 
 func format(p_value: Variant) -> String:
+	if p_value == null:
+		return "(0.00, 0.00, 0.00, 0.00)"
 	return "(%.2f, %.2f, %.2f, %.2f)" % [p_value.r, p_value.g, p_value.b, p_value.a]
 
 

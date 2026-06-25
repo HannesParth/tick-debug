@@ -1,31 +1,26 @@
 @tool
 extends Node
 ## Main Autoload
-
+## TODO here: more detailed description.
 
 # TODO:
-# - put recommendation somewhere to override _equals, _add etc somewhere
-#   for an object type to work
-# -> I would actually have to integrate that, so average, midpoint and maybe 
-#    graph actually work with that
-
-
-# - test performance impact of disabling editor dock
-# - also see if the non-jitter labels have a performance impact
-# - style?
-# - put a disclaimer somewhere that a projet without V-Sync reaches the message
-#   queue limit way faster. Except if the message queue accelerates with it?
-
-# - the message queue limit just fucking confuses me, big todo for later:
-#   implement Websocket or WebRTC bridge for runtime -> editor communication
-
-# PERFORMANCE TEST: Disabling editor dock
-# DO THIS AGAIN
-# V-Sync disabled
+# - clean up comments and check doc comments
+# - export Icon for asset lib
+# - export Icon as thumbnail for asset store
+# - get some good screenshots
+# - write GitHub README
+#   - don't forget to explain how the debug bridge works, message queue and stuff
+# - create GitHub Release -> 1.0.0
+# - upload to asset lib and store
+# - advertize on reddit and godot discord
+#
+# Todo for 1.1:
+# - complex line graph inspired by https://store.godotengine.org/asset/jeditor/debug-graph/
+# - color history "graph"
 
 
 ## Emitted at the end of a frame, when a tracking value was added or updated 
-## this frame.
+## that frame.
 signal _tracking_changed_this_frame()
 
 ## Emitted when a property is untracked by the user.
@@ -47,11 +42,11 @@ const INGAME_PANEL_LAYER: int = 99
 const INGAME_PANEL_CREATE_POS: Vector2 = Vector2(30, 30)
 
 
-# Maximum number of messages per second from runtime to the editor dock using
-# EngineDebugger.send_message. This is to prevent spam by Godot's 
-# "Too many messages!" error.
-# Set to an initial value here, overriden in _ready() by the value
-# from the TickDebug project settings.
+## Maximum number of messages per second from runtime to the editor dock using
+## [method EngineDebugger.send_message]. This is to prevent spam by Godot's 
+## "Too many messages!" error. [br]
+## Set to an initial value here, overriden in _ready() by the value
+## from the TickDebug project settings.
 var _max_messages_per_sec: int = 8000
 
 # Rolling window: track message timestamps to enforce a per-second budget
@@ -76,12 +71,12 @@ var _track_types: Dictionary[Variant, TiDeTrackType] = {}
 # Value: The ValueData.
 var _tracked_properties: Dictionary[String, ValueData] = {}
 
-# Flag set when a value is tracked (user calls track()).
-# Reset by the debug docks.
+# Flag set when a value is tracked (user calls track()) this frame.
+# Reset at the end of the frame, emitting _tracking_changed_this_frame.
 var _new_track: bool = false
 
 var _ingame_panel_layer: CanvasLayer
-var _ingame_panel: TiDeRuntimeDock
+var _ingame_panel: TiDeDock
 
 
 # ====== Setup ======
@@ -135,6 +130,8 @@ func _process(_delta: float) -> void:
 	_check_for_new_track.call_deferred()
 
 
+# Check at the end of every frame if track() was called.
+# If so, emit the signal and reset _new_track.
 func _check_for_new_track() -> void:
 	if _new_track:
 		_tracking_changed_this_frame.emit()
@@ -145,19 +142,19 @@ func _check_for_new_track() -> void:
 ## Sets up a value to be tracked or updates an already tracked value. [br]
 ## [b]Note[/b] that "track" does [i]not[/i] mean that the value is automatically
 ## tracked after you called this once. Instead, calling this the first time
-## creates a tracking reference, and every subsequent call updates it.
+## creates a tracking reference, and every subsequent call updates it. [br]
 ## [br]
 ## [param p_value]: The value to track. Make sure it has a registered TrackType.
-## For default formatters, see [code]res://addons/tick_debug/scripts/track_types
-## [/code]. [br]
+## For default formatters, see 
+## [code]res://addons/tick_debug/scripts/track_types[/code]. [br]
 ## [br]
-## [param p_caller]: The Node calling this method. Just use [code]self[/code].
-## used together with the next parameter to construc the internal ID. [br]
+## [param p_caller]: The Node calling this method. Used together with the next 
+## parameter to construc the internal ID. Recommended: [code]self[/code]. [br]
 ## [param p_custom_id]: Custom ID to identify this value by. Used together with
 ## the caller's instance ID to construct the internal tracking ID. [br]
 ## Also used as the display name of the value. [br]
 ## [br]
-## [b]Returns[/b] the constructed tracking ID for the value.
+## [b]Returns[/b] the constructed tracking ID of the value.
 func track(p_value: Variant, p_caller: Node, p_custom_id: StringName) -> String:
 	var id: String = _build_tracking_id(p_caller, p_custom_id)
 	var data: ValueData = _track_value(p_value, id)
@@ -194,6 +191,11 @@ func untrack_by_constructed_id(p_constructed_id: String) -> void:
 		EngineDebugger.send_message("tick_debug:untrack", [p_constructed_id])
 
 
+## Registers a [TiDeTrackType] or overrides an existing one. [br]
+## TrackTypes are used as central containers for string formatting, calculations,
+## and logic checks. [br]
+## See [code]res://addons/tick_debug/scripts/track_types[/code] for default 
+## implementations.
 func register_track_type(p_track_type: TiDeTrackType) -> void:
 	_track_types[p_track_type.get_type()] = p_track_type
 
@@ -208,8 +210,6 @@ func _track_editor(p_value: Variant, p_id: StringName) -> void:
 
 # Internal method to track a value.
 # [method TickDebug.track] just constructs the tracking ID and calls this.
-# Also used by the DebuggerPlugin to track a value with its constructed ID 
-# directly, which it got from the runtime instance.
 func _track_value(p_value: Variant, p_id: StringName) -> ValueData:
 	var data: ValueData
 	if _tracked_properties.has(p_id):
@@ -226,9 +226,6 @@ func _track_value(p_value: Variant, p_id: StringName) -> ValueData:
 			printerr(msg)
 			push_error(msg)
 	
-	# Always: set flag
-	# Used by editor dock at editor time
-	# Used by ingame dock at runtime
 	_new_track = true
 	return data
 
@@ -253,14 +250,17 @@ func _build_tracking_id(p_caller: Node, p_custom_id: StringName) -> String:
 # is not directly accessible.
 func _format_value(p_value: Variant) -> String:
 	var track_type: TiDeTrackType = _find_track_type(p_value)
-	
 	if track_type != null:
 		return track_type.format(p_value)
 	
-	# Fallback, just let built-in string conversion handle it
 	return str(p_value)
 
 
+# Finds the TiDeTrackType of a value type.
+# For non-objects, uses the Variant.Type.
+# For objects, checks using class name and script name, traversing the 
+# inheritance recusively.
+# Returns null if the type could not be found in _track_types.
 func _find_track_type(p_value: Variant) -> TiDeTrackType:
 	if p_value == null:
 		return null
@@ -376,8 +376,11 @@ func _unhandled_key_input(event: InputEvent) -> void:
 
 
 ## Data class for tracking a value.
-## Calculates all snapshots and keeps the history used for calculating the 
-## average value and for the graph.
+## Holds the value's TrackType, which is used for logic checks, some calculations
+## and string formatting.
+## Keeps a value history, used for calculating the average and by the simple
+## graph. To set the history size, see 
+## [code]debug/tick_debug/value_history_size[/code] in the project settings.
 class ValueData:
 	var value: Variant
 	var min_value: Variant
@@ -390,7 +393,6 @@ class ValueData:
 	
 	@warning_ignore("inferred_declaration")
 	var _settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
-	
 	var _average_disabled: bool = false
 	var _midpoint_disabled: bool = false
 	var _graph_disabled: bool = false
@@ -470,6 +472,3 @@ class ValueData:
 			return track_type.format(p_value)
 		return str(p_value)
 	
-	
-	func is_color() -> bool:
-		return track_type != null && track_type.get_type() == TYPE_COLOR
