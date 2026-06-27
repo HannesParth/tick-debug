@@ -10,9 +10,7 @@ extends Node
 ## [method TickDebug.register_track_type].
 
 # TODO:
-# - export Icon for asset lib
-# - export Icon as thumbnail for asset store
-# - get some good screenshots
+# - get some good screenshots -> in process, test in NPNG
 # - write GitHub README
 #   - don't forget to explain how the debug bridge works, message queue and stuff
 #   - explain about class name usage in TickDebug
