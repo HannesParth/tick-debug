@@ -2,6 +2,10 @@
 @abstract
 class_name TiDeDock
 extends PanelContainer
+## Base class for TickDebug Docks/Panels.
+##
+## This is for the root node of scenes displaying tracked values. [br]
+## It is extended by the runtime and editor implementations.
 
 
 @export var property_element_scene: PackedScene
@@ -22,7 +26,7 @@ func _exit_tree() -> void:
 
 func _ready() -> void:
 	TickDebug._tracking_changed_this_frame.connect(_on_tracking_changed)
-	TickDebug._property_untracked.connect(on_untracked)
+	TickDebug._property_untracked.connect(_on_untracked)
 
 
 func _on_tracking_changed() -> void:
@@ -32,7 +36,7 @@ func _on_tracking_changed() -> void:
 	_refresh_disclaimer()
 
 
-func on_untracked(p_id: String) -> void:
+func _on_untracked(p_id: String) -> void:
 	if !_elements.has(p_id):
 		return
 	_elements[p_id].queue_free()

@@ -4,8 +4,13 @@ extends Label
 ## than the previous content is entered.
 
 
+## After how many seconds of the labels horizontal min size being smaller than
+## its current horizontal size the label shrinks.
 const SHRINK_AFTER_SEC: float = 3.0
-const SIZE_DELTA_THESHOLD: float = 10.0
+
+## How much smaller the labels horizontal min size has to be compared to its 
+## current horizontal size to consider shrinking.
+const SIZE_DELTA_THRESHOLD: float = 10.0
 
 
 var _sec_since_size_increase: float = 0.0
@@ -25,7 +30,7 @@ func _process(delta: float) -> void:
 	if (
 			_sec_since_size_increase > SHRINK_AFTER_SEC 
 			&& custom_minimum_size.x > _start_min_size.x
-			&& custom_minimum_size.x > min_x + SIZE_DELTA_THESHOLD
+			&& custom_minimum_size.x > min_x + SIZE_DELTA_THRESHOLD
 			&& (_shrink_tween == null || !_shrink_tween.is_running())
 	):
 		var target: float = maxf(_start_min_size.x, min_x)

@@ -1,15 +1,21 @@
 @tool
 extends Node
-## Main Autoload
-## TODO here: more detailed description.
+## Main Autoload of the TickDebug addon for debugging continuously changing
+## values.
+##
+## The central functions are [method TickDebug.track] and 
+## [method TickDebug.untrack]. [br]
+## If you want to track a type that is not covered in
+## [code]res://addons/tick_debug/scripts/track_types[/code], see
+## [method TickDebug.register_track_type].
 
 # TODO:
-# - clean up comments and check doc comments
 # - export Icon for asset lib
 # - export Icon as thumbnail for asset store
 # - get some good screenshots
 # - write GitHub README
 #   - don't forget to explain how the debug bridge works, message queue and stuff
+#   - explain about class name usage in TickDebug
 # - create GitHub Release -> 1.0.0
 # - upload to asset lib and store
 # - advertize on reddit and godot discord
@@ -171,6 +177,8 @@ func track(p_value: Variant, p_caller: Node, p_custom_id: StringName) -> String:
 ## [br]
 ## To remove the tracking with the constructed tracking ID returned by
 ## [method TickDebug.track], use [method TickDebug.untrack_by_constructed_id].
+## [br]
+## [b]Note:[/b] Calling this is not necessary for cleanup when ending playmode.
 func untrack(p_caller: Node, p_custom_id: StringName) -> void:
 	var id: String = _build_tracking_id(p_caller, p_custom_id)
 	untrack_by_constructed_id(id)

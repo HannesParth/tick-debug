@@ -1,6 +1,7 @@
 @tool
 class_name TiDeGraphSimple
 extends Panel
+## A simpel 2D line graph specialized for working with [TickDebug.ValueData].
 
 
 const LINE_COLOR: Color = Color.LIME_GREEN
@@ -19,6 +20,9 @@ var _current_max: Variant
 var _value_history_size: int = 150
 
 
+## Tries to set up the graph with the given ValueData. [br]
+## Return false if the value is of a type that can not be drawn with this graph,
+## which currently only includes floats and ints.
 func try_setup(p_value: TickDebug.ValueData) -> bool:
 	if !_is_drawable_type(p_value.value):
 		return false
@@ -49,19 +53,18 @@ func _draw() -> void:
 				_remap_index_to_size(i),
 				_remap_value_to_size(i)
 		)
-	# Don't use antialiasing to speed up line drawing, but use a width that scales with
-	# viewport scale to keep the line easily readable on hiDPI displays.
+	
 	draw_polyline(polyline, LINE_COLOR, -1.0)
 
 
-## Remaps the index of a history entry to the horizontal size
-## of the graph.
+# Remaps the index of a history entry to the horizontal size
+# of the graph.
 func _remap_index_to_size(p_i: int) -> float:
 	return remap(p_i, 0, _value._history.size(), 0, size.x)
 
 
-## Remaps the value of a history entry to the vertical size
-## of the graph.
+# Remaps the value of a history entry to the vertical size
+# of the graph.
 func _remap_value_to_size(p_i: int) -> float:
 	return remap(
 			clampf(_value._history[p_i], _value.min_value, _value.max_value), 

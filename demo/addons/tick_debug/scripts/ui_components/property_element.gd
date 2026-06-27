@@ -1,6 +1,10 @@
 @tool
 class_name TiDePropertyElement
 extends Control
+## A list element of a [TiDeDock], displaying info for 1 value.
+##
+## Enables and disables value displays depending on the value type. [br]
+## Any disabled UI Nodes also have their processing disabled.
 
 
 @export var _property_title_value: TiDeTitleValuePair

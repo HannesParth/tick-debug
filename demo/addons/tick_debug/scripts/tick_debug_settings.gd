@@ -1,6 +1,7 @@
 extends RefCounted
 # Reference by using 
 # preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
+# to reduce usage of class names.
 
 
 const KEY_BASE: String = "debug/tick_debug"
@@ -41,7 +42,7 @@ const DESCRIPTIONS: Dictionary[String, String] = {
 		"Disable the TickDebug editor dock. 
 		This also disables the DebuggerPlugin, stopping the TickDebug addon "
 		+ "from sending messages using the EngineDebugger for each value.
-		This quite possibly improves performance in the editor.",
+		This may even noticably improve performance in the editor.",
 	KEY_VALUE_HISTORY_SIZE:
 		"Size of the history array of each tracked value.
 		The calculation window of the average and the display window of the "
@@ -73,7 +74,7 @@ static func initialize_setting(
 # As of Godot 4.6.3, setting a description tooltip for custom project 
 # settings is not possible.
 # So, I am testing the workaround of adding the descriptions as settings in the
-# form of multiline Strings.
+# form of (multiline) Strings.
 static func init_description_workaround(actual_setting_key: String) -> void:
 	var key: String = actual_setting_key + "_description"
 	var value: String = DESCRIPTIONS[actual_setting_key]
