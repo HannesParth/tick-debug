@@ -4,15 +4,15 @@ extends TiDeTrackType
 
 
 func get_type() -> Variant:
-	return TYPE_FLOAT
+	return TYPE_INT
 
 
 func format(p_value: Variant) -> String:
-	return "%.2f" % p_value
+	return str(p_value)
 
 
 func random_value() -> Variant:
-	return randf_range(-10.0, 10.0)
+	return randi_range(-10, 10)
 
 
 func supports_numeric() -> bool:
@@ -20,7 +20,7 @@ func supports_numeric() -> bool:
 
 
 func zero_value() -> Variant:
-	return 0.0
+	return 0
 
 
 func calc_average(p_data: TickDebug.ValueData) -> Variant:

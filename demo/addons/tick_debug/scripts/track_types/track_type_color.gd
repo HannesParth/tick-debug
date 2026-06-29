@@ -25,7 +25,7 @@ func zero_value() -> Variant:
 	return Color.TRANSPARENT
 
 
-func calc_average(_p_history: Array[Variant]) -> Variant:
+func calc_average(_p_data: TickDebug.ValueData) -> Variant:
 	return zero_value()
 
 

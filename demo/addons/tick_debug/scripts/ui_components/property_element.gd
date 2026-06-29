@@ -42,9 +42,8 @@ func setup(p_custom_id: String, p_data: TickDebug.ValueData) -> void:
 	_snapshots_foldable.folding_changed.connect(
 			_on_folding_changed.bind(_snapshots_foldable)
 	)
-	_graph_foldable.folding_changed.connect(
-			_on_folding_changed.bind(_graph_foldable)
-	)
+	# We don't connect the graph foldable, because disabling its processing
+	# would stop the graph from keeping its value history.
 	
 	if _settings.get_disable_snapshots() || !p_data.supports_numeric():
 		_snapshots_foldable.hide()
@@ -84,7 +83,7 @@ func update(p_data: TickDebug.ValueData) -> void:
 			_average_value.set_value(p_data.str_format(p_data.average))
 	
 	if _graph_foldable.visible && !_graph_foldable.folded:
-		_graph.update()
+		_graph.update(p_data.value)
 
 
 func _on_folding_changed(

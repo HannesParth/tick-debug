@@ -12,8 +12,6 @@ const KEY_DISABLE_SNAPSHOTS: String = "%s/disable_snapshots" % KEY_BASE
 const KEY_DISABLE_GRAPH: String = "%s/disable_graph" % KEY_BASE
 const KEY_DISABLE_EDITOR_DOCK: String = "%s/disable_editor_dock" % KEY_BASE
 
-## Max size of the history of a value, used for calculating the average
-## and graph display.
 const KEY_VALUE_HISTORY_SIZE: String = "%s/value_history_size" % KEY_BASE
 const KEY_MAX_DEBUGGER_MSG_PER_SEC: String = \
 		"%s/max_debugger_messages_per_second" % KEY_BASE
@@ -24,7 +22,7 @@ const KEY_DEFAULTS: Dictionary[String, Variant] = {
 	KEY_DISABLE_SNAPSHOTS: false,
 	KEY_DISABLE_GRAPH: false,
 	KEY_DISABLE_EDITOR_DOCK: false,
-	KEY_VALUE_HISTORY_SIZE: 150,
+	KEY_VALUE_HISTORY_SIZE: 300,
 	KEY_MAX_DEBUGGER_MSG_PER_SEC: 6144
 }
 
@@ -44,10 +42,9 @@ const DESCRIPTIONS: Dictionary[String, String] = {
 		+ "from sending messages using the EngineDebugger for each value.
 		This may even noticably improve performance in the editor.",
 	KEY_VALUE_HISTORY_SIZE:
-		"Size of the history array of each tracked value.
-		The calculation window of the average and the display window of the "
-		+ "graph is determined by this.
-		If both average and graph are disabled, no history is kept.",
+		"Size of the history array of tracked values with a graph.
+		Determines the display window of a graph.
+		Currently, the simple graph supports floats and ints.",
 	KEY_MAX_DEBUGGER_MSG_PER_SEC:
 		"TickDebug uses EngineDebugger.send_message to carry runtime values "
 		+ "to the editor. This message queue has a max size.
@@ -80,11 +77,18 @@ static func init_description_workaround(actual_setting_key: String) -> void:
 	var value: String = DESCRIPTIONS[actual_setting_key]
 	ProjectSettings.set(key, value)
 	ProjectSettings.set_initial_value(key, value)
-	ProjectSettings.add_property_info({
-		name=key, 
-		type=TYPE_STRING#, 
-		#hint=PROPERTY_HINT_MULTILINE_TEXT
-	})
+	
+	if value.length() > 80:
+		ProjectSettings.add_property_info({
+			name=key, 
+			type=TYPE_STRING, 
+			hint=PROPERTY_HINT_MULTILINE_TEXT
+		})
+	else:
+		ProjectSettings.add_property_info({
+			name=key, 
+			type=TYPE_STRING
+		})
 
 
 static func setup_settings() -> void:
@@ -118,7 +122,7 @@ static func setup_settings() -> void:
 			KEY_DEFAULTS[KEY_VALUE_HISTORY_SIZE],
 			TYPE_INT,
 			PROPERTY_HINT_RANGE,
-			"10,400,1,or_greater,prefer_slider,suffix:values"
+			"10,2400,10,or_greater,prefer_slider,suffix:values"
 	)
 	initialize_setting(
 			KEY_MAX_DEBUGGER_MSG_PER_SEC,

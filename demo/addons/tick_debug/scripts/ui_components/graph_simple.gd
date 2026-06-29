@@ -14,10 +14,11 @@ const LINE_COLOR: Color = Color.LIME_GREEN
 @warning_ignore("inferred_declaration")
 var _settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
 
-var _value: TickDebug.ValueData = null
+var _data: TickDebug.ValueData = null
 var _current_min: Variant
 var _current_max: Variant
 var _value_history_size: int = 150
+var _history: Array[Variant] = []
 
 
 ## Tries to set up the graph with the given ValueData. [br]
@@ -26,13 +27,22 @@ var _value_history_size: int = 150
 func try_setup(p_value: TickDebug.ValueData) -> bool:
 	if !_is_drawable_type(p_value.value):
 		return false
+	if p_value == null:
+		push_error("[TickDebug]: SimpleGraph got handed null data.")
+		return false
 	
-	_value = p_value
+	_data = p_value
+	_history.push_back(_data.value)
 	_value_history_size = _settings.get_value_history_size()
 	return true
 
 
-func update() -> void:
+func update(p_value: Variant) -> void:
+	_history.push_back(p_value)
+	
+	if _history.size() > _value_history_size:
+		_history.pop_front()
+	
 	queue_redraw()
 
 
@@ -41,14 +51,14 @@ func _is_drawable_type(p_value: Variant) -> bool:
 
 
 func _draw() -> void:
-	if _value == null:
+	if _data == null:
 		return
 	
 	_update_min_max_labels()
 	
 	var polyline: PackedVector2Array = []
-	polyline.resize(_value_history_size)
-	for i: int in _value._history.size():
+	polyline.resize(_history.size())
+	for i: int in _history.size():
 		polyline[i] = Vector2(
 				_remap_index_to_size(i),
 				_remap_value_to_size(i)
@@ -60,16 +70,16 @@ func _draw() -> void:
 # Remaps the index of a history entry to the horizontal size
 # of the graph.
 func _remap_index_to_size(p_i: int) -> float:
-	return remap(p_i, 0, _value._history.size(), 0, size.x)
+	return remap(p_i, 0, _history.size(), 0, size.x)
 
 
 # Remaps the value of a history entry to the vertical size
 # of the graph.
 func _remap_value_to_size(p_i: int) -> float:
 	return remap(
-			clampf(_value._history[p_i], _value.min_value, _value.max_value), 
-			_value.min_value, 
-			_value.max_value, 
+			clampf(_history[p_i], _data.min_value, _data.max_value), 
+			_data.min_value, 
+			_data.max_value, 
 			size.y, 
 			0.0
 	)
@@ -79,9 +89,9 @@ func _update_min_max_labels() -> void:
 	if _min_label == null || _max_label == null:
 		return
 	
-	if _current_min != _value.min_value:
-		_current_min = _value.min_value
-		_min_label.text = _value.str_format(_current_min)
-	if _current_min != _value.max_value:
-		_current_max = _value.max_value
-		_max_label.text = _value.str_format(_current_max)
+	if _current_min != _data.min_value:
+		_current_min = _data.min_value
+		_min_label.text = _data.str_format(_current_min)
+	if _current_min != _data.max_value:
+		_current_max = _data.max_value
+		_max_label.text = _data.str_format(_current_max)

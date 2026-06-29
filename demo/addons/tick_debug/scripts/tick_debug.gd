@@ -9,11 +9,25 @@ extends Node
 ## [code]res://addons/tick_debug/scripts/track_types[/code], see
 ## [method TickDebug.register_track_type].
 
+# After testing TODO:
+# - History is too small, especially noticable with graph. 150 = less than 3 sec
+#   at 60 fps
+#   -> remove history, calc average by keeping previous sum and count, not history
+#      either give graph own history or change remap behaviour to only remap 
+#      latest value
+# - tracking an enum triggers the missing track type error, but Variant.Type
+#   has no enum. How to incorporate?
+# - when I start multiple times without manually cleaning the editor dock,
+#   it doesn't get cleaned at all
+
 # TODO:
 # - get some good screenshots -> in process, test in NPNG
 # - write GitHub README
 #   - don't forget to explain how the debug bridge works, message queue and stuff
 #   - explain about class name usage in TickDebug
+#   - give heads up that upon first adding the folder, there are probably a bunch
+#     of parse errors, because the Autoload doesn't exist till plugin activation
+#   - How to install section!
 # - create GitHub Release -> 1.0.0
 # - upload to asset lib and store
 # - advertize on reddit and godot discord
@@ -21,6 +35,7 @@ extends Node
 # Todo for 1.1:
 # - complex line graph inspired by https://store.godotengine.org/asset/jeditor/debug-graph/
 # - color history "graph"
+# - add an option for rolling window average
 
 
 ## Emitted at the end of a frame, when a tracking value was added or updated 
@@ -112,6 +127,9 @@ func _register_default_track_types() -> void:
 	).new())
 	register_track_type(preload(
 			"res://addons/tick_debug/scripts/track_types/track_type_float.gd"
+	).new())
+	register_track_type(preload(
+			"res://addons/tick_debug/scripts/track_types/track_type_int.gd"
 	).new())
 	register_track_type(preload(
 			"res://addons/tick_debug/scripts/track_types/track_type_string.gd"
@@ -392,10 +410,10 @@ class ValueData:
 	var min_value: Variant
 	var max_value: Variant
 	var midpoint_value: Variant
-	var average: Variant
 	
-	var _history_size: int = 150
-	var _history: Array[Variant] = []
+	var average: Variant
+	var total_sum: Variant
+	var total_count: int
 	
 	@warning_ignore("inferred_declaration")
 	var _settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
@@ -410,7 +428,6 @@ class ValueData:
 		value = p_value
 		track_type = TickDebug._find_track_type(p_value)
 		
-		_history_size = _settings.get_value_history_size()
 		_average_disabled = _settings.get_disable_average()
 		_midpoint_disabled = _settings.get_disable_midpoint()
 		_graph_disabled = _settings.get_disable_graph()
@@ -423,8 +440,8 @@ class ValueData:
 			max_value = p_value
 			midpoint_value = p_value
 			average = p_value
-			
-			_history.append(p_value)
+			total_sum = track_type.zero_value()
+			total_count = track_type.zero_value()
 	
 	
 	func update(p_value: Variant) -> void:
@@ -450,17 +467,8 @@ class ValueData:
 		if minmax_changed && !_midpoint_disabled:
 			track_type.calc_midpoint(min_value, max_value)
 		
-		# Don't use history if both average and graph are disabled.
-		if _average_disabled && _graph_disabled:
-			return
-		
-		_history.push_back(p_value)
-		
 		if !_average_disabled:
-			average = track_type.calc_average(_history)
-		
-		if _history.size() > _history_size:
-			_history.pop_front()
+			average = track_type.calc_average(self)
 	
 	
 	## Safe accessor to [method TiDeTrackType.supports_numeric] of this Data's

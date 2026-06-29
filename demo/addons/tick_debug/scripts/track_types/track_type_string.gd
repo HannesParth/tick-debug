@@ -23,9 +23,9 @@ func zero_value() -> Variant:
 	return ""
 
 
-func calc_average(_p_history: Array[Variant]) -> Variant:
-	return false
+func calc_average(_p_data: TickDebug.ValueData) -> Variant:
+	return zero_value()
 
 
 func calc_midpoint(_p_min: Variant, _p_max: Variant) -> Variant:
-	return false
+	return zero_value()

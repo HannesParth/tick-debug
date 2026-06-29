@@ -34,7 +34,7 @@ func zero_value() -> Variant;
 
 
 @abstract
-func calc_average(p_history: Array[Variant]) -> Variant;
+func calc_average(p_data: TickDebug.ValueData) -> Variant;
 
 
 @abstract

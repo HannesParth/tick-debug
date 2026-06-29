@@ -26,17 +26,11 @@ func zero_value() -> Variant:
 	return Vector2.ZERO
 
 
-func calc_average(p_history: Array[Variant]) -> Variant:
-	if p_history.is_empty():
-		return 0.0
+func calc_average(p_data: TickDebug.ValueData) -> Variant:
+	p_data.total_sum += p_data.value
+	p_data.total_count += 1
 	
-	var sum: Vector2 = zero_value()
-	var count: int = p_history.size()
-	
-	for entry: Vector2 in p_history:
-		sum += entry
-	
-	return sum / float(count)
+	return p_data.total_sum / float(p_data.total_count)
 
 
 func calc_midpoint(p_min: Variant, p_max: Variant) -> Variant:
