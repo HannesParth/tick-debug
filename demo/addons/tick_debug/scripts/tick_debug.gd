@@ -10,11 +10,6 @@ extends Node
 ## [method TickDebug.register_track_type].
 
 # After testing TODO:
-# - History is too small, especially noticable with graph. 150 = less than 3 sec
-#   at 60 fps
-#   -> remove history, calc average by keeping previous sum and count, not history
-#      either give graph own history or change remap behaviour to only remap 
-#      latest value
 # - tracking an enum triggers the missing track type error, but Variant.Type
 #   has no enum. How to incorporate?
 # - when I start multiple times without manually cleaning the editor dock,

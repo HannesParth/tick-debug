@@ -92,6 +92,7 @@ mouse_filter = 2
 [node name="GraphPanel" type="Panel" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/GraphFoldable/HBoxContainer" unique_id=583420654 node_paths=PackedStringArray("_min_label", "_max_label")]
 custom_minimum_size = Vector2(200, 60)
 layout_mode = 2
+size_flags_horizontal = 3
 mouse_filter = 2
 theme_override_styles/panel = SubResource("StyleBoxFlat_abfn8")
 script = ExtResource("3_sem7a")
