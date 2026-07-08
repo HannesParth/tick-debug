@@ -10,8 +10,6 @@ extends Node
 ## [method TickDebug.register_track_type].
 
 # After testing TODO:
-# - tracking an enum triggers the missing track type error, but Variant.Type
-#   has no enum. How to incorporate?
 # - when I start multiple times without manually cleaning the editor dock,
 #   it doesn't get cleaned at all
 
@@ -22,6 +20,8 @@ extends Node
 #   - explain about class name usage in TickDebug
 #   - give heads up that upon first adding the folder, there are probably a bunch
 #     of parse errors, because the Autoload doesn't exist till plugin activation
+#   - explain that there is no enum Variant.Type, and that passing one to track 
+#     will either use the direct int key, or use Enum.keys()[variable]
 #   - How to install section!
 # - create GitHub Release -> 1.0.0
 # - upload to asset lib and store
@@ -477,7 +477,7 @@ class ValueData:
 	## Safe accessor to [method TiDeTrackType.format] of this Data's TrackType.
 	## Uses [code]str()[/code] if this Data has no TrackType.
 	func str_format(p_value: Variant) -> String:
-		if track_type != null:
+		if track_type != null && p_value != null:
 			return track_type.format(p_value)
 		return str(p_value)
 	

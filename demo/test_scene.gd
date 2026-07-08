@@ -1,6 +1,12 @@
 extends Control
 
 
+enum Test {
+	HELLO,
+	THERE,
+}
+
+
 @export var _float_amount: int = 1
 @export var _vector3_amount: int = 1
 
@@ -33,3 +39,7 @@ func _process(_delta: float) -> void:
 				randf_range(0, 10)
 		)
 		TickDebug.track(value, self, &"Vector3 #" + str(i + 1))
+	
+	
+	var test_enum_value: Test = Test.HELLO
+	TickDebug.track(test_enum_value, self, &"Test-Enum")

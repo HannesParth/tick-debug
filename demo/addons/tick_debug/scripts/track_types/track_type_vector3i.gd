@@ -8,6 +8,8 @@ func get_type() -> Variant:
 
 
 func format(p_value: Variant) -> String:
+	if p_value == null:
+		return "NULL"
 	# Pad to 4 chars
 	return "(%4d,\t %4d,\t %4d)" % [p_value.x, p_value.y, p_value.z]
 

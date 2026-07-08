@@ -8,6 +8,8 @@ func get_type() -> Variant:
 
 
 func format(p_value: Variant) -> String:
+	if p_value == null:
+		return "NULL"
 	return "%.2f" % p_value
 
 
