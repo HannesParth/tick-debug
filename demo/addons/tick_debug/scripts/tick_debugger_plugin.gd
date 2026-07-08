@@ -23,6 +23,12 @@ func _capture(message: String, data: Array, _session_id: int) -> bool:
 
 # Called when runtime starts
 func _setup_session(p_session_id: int) -> void:
+	print("[TickDebug] _setup_session called, dock is: ", dock)
+	
+	if dock == null:
+		push_error("[TickDebug] Dock reference is null in _setup_session!")
+		return
+	
 	var session: EditorDebuggerSession = get_session(p_session_id)
 	
 	session.started.connect(TickDebug._clear_tracking)

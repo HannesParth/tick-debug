@@ -31,6 +31,7 @@ tooltip_text = "Clears the editor instance of TickDebug of tracked values and re
 text = "Clear"
 
 [node name="NoPropertiesDisclaimer" type="Label" parent="MarginContainer/VBoxContainer" unique_id=429970845]
+visible = false
 layout_mode = 2
 size_flags_horizontal = 4
 size_flags_vertical = 0
@@ -44,3 +45,8 @@ draw_focus_border = true
 [node name="PropertiesVBoxContainer" type="VBoxContainer" parent="MarginContainer/VBoxContainer/ScrollContainer" unique_id=1743996005]
 layout_mode = 2
 size_flags_horizontal = 3
+
+[node name="CustomMessageLabel" type="Label" parent="MarginContainer/VBoxContainer" unique_id=238658891]
+visible = false
+layout_mode = 2
+text = "Message"

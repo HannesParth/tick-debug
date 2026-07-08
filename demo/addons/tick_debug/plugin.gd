@@ -2,9 +2,6 @@
 extends EditorPlugin
 
 
-const DOCK_PATH: String = "res://addons/tick_debug/scenes/tick_editor_dock.tscn"
-const DEBUGGER_PLUGIN_PATH: String = "res://addons/tick_debug/scripts/tick_debugger_plugin.gd"
-
 const AUTOLOAD_NAME: StringName = &"TickDebug"
 const AUTOLOAD_PATH: String = "res://addons/tick_debug/scripts/tick_debug.gd"
 
@@ -58,7 +55,9 @@ func _construct_editor_dock() -> void:
 	if dock_scene != null:
 		_remove_editor_dock()
 	
-	dock_scene = preload(DOCK_PATH).instantiate()
+	dock_scene = preload(
+			"res://addons/tick_debug/scenes/tick_editor_dock.tscn"
+	).instantiate()
 	
 	dock = EditorDock.new()
 	dock.add_child(dock_scene)
@@ -76,7 +75,9 @@ func _construct_debugger_plugin() -> void:
 	if debugger_plugin != null:
 		_remove_debugger_plugin()
 	
-	debugger_plugin = preload(DEBUGGER_PLUGIN_PATH).new()
+	debugger_plugin = preload(
+			"res://addons/tick_debug/scripts/tick_debugger_plugin.gd"
+	).new()
 	debugger_plugin.set(&"dock", dock_scene)
 	add_debugger_plugin(debugger_plugin)
 

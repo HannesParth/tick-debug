@@ -12,6 +12,7 @@ extends Node
 # After testing TODO:
 # - when I start multiple times without manually cleaning the editor dock,
 #   it doesn't get cleaned at all
+#   -> test with godot console executable
 
 # TODO:
 # - get some good screenshots -> in process, test in NPNG
