@@ -19,19 +19,3 @@ func _capture(message: String, data: Array, _session_id: int) -> bool:
 		TickDebug.untrack_by_constructed_id(data[0])
 		return true
 	return false
-
-
-# Called when runtime starts
-func _setup_session(p_session_id: int) -> void:
-	print("[TickDebug] _setup_session called, dock is: ", dock)
-	
-	if dock == null:
-		push_error("[TickDebug] Dock reference is null in _setup_session!")
-		return
-	
-	var session: EditorDebuggerSession = get_session(p_session_id)
-	
-	session.started.connect(TickDebug._clear_tracking)
-	session.started.connect(dock._on_runtime_started)
-	
-	session.stopped.connect(dock._on_runtime_stopped)

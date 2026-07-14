@@ -4,12 +4,28 @@ extends TiDeDock
 
 
 @export var _clear_button: Button
-@export var _custom_message_label: Label
+
+
+var _was_playing_scene: bool = false
 
 
 func _ready() -> void:
+	push_warning("Created! " + str(get_instance_id()))
 	super._ready()
 	_clear_button.pressed.connect(_on_clear_pressed)
+
+
+func _process(_delta: float) -> void:
+	var is_playing: bool = EditorInterface.is_playing_scene()
+	
+	if is_playing == _was_playing_scene:
+		return
+	_was_playing_scene = is_playing
+	
+	if is_playing:
+		_on_runtime_started()
+	else:
+		_on_runtime_stopped()
 
 
 func _on_clear_pressed() -> void:
@@ -20,8 +36,8 @@ func _on_clear_pressed() -> void:
 
 # Called by the DebuggerPlugin
 func _on_runtime_started() -> void:
-	_custom_message_label.text = "Runtime started!"
-	_custom_message_label.show()
+	print("RUNTIME STARTED, " + str(get_instance_id()))
+	TickDebug._clear_tracking()
 	
 	_elements.clear()
 	_clear_children()
@@ -29,7 +45,5 @@ func _on_runtime_started() -> void:
 
 # Called by the DebuggerPlugin
 func _on_runtime_stopped() -> void:
-	_custom_message_label.text = "Runtime stopped!"
-	_custom_message_label.show()
-	
-	refresh()
+	print("RUNTIME STOPPED")
+	#refresh()
