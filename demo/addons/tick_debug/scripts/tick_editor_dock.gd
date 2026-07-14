@@ -36,7 +36,6 @@ func _on_clear_pressed() -> void:
 
 # Called by the DebuggerPlugin
 func _on_runtime_started() -> void:
-	print("RUNTIME STARTED, " + str(get_instance_id()))
 	TickDebug._clear_tracking()
 	
 	_elements.clear()
@@ -45,5 +44,4 @@ func _on_runtime_started() -> void:
 
 # Called by the DebuggerPlugin
 func _on_runtime_stopped() -> void:
-	print("RUNTIME STOPPED")
-	#refresh()
+	refresh()

@@ -9,10 +9,6 @@ extends Node
 ## [code]res://addons/tick_debug/scripts/track_types[/code], see
 ## [method TickDebug.register_track_type].
 
-# After testing TODO:
-# - when I start multiple times without manually cleaning the editor dock,
-#   it doesn't get cleaned at all
-#   -> test with godot console executable
 
 # TODO:
 # - get some good screenshots -> in process, test in NPNG

@@ -57,10 +57,7 @@ func setup(p_custom_id: String, p_data: TickDebug.ValueData) -> void:
 			_midpoint_value.process_mode = Node.PROCESS_MODE_DISABLED
 	
 	# --- Set up graph ---
-	if (
-			_settings.get_disable_graph()
-			|| !_graph.try_setup(p_data) 
-	):
+	if _settings.get_disable_graph() || !_graph.try_setup(p_data):
 		_graph_foldable.hide()
 		_graph_foldable.process_mode = Node.PROCESS_MODE_DISABLED
 
@@ -82,7 +79,7 @@ func update(p_data: TickDebug.ValueData) -> void:
 		if _average_value.visible:
 			_average_value.set_value(p_data.str_format(p_data.average))
 	
-	if _graph_foldable.visible && !_graph_foldable.folded:
+	if _graph_foldable.visible:
 		_graph.update(p_data.value)
 
 

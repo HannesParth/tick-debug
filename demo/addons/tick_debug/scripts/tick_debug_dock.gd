@@ -59,8 +59,7 @@ func refresh() -> void:
 
 
 ## Updates a property entry. [br]
-## Called by the DebuggerPlugin for the editor dock. [br]
-## Called in _process() for the runtime dock.
+## Creates a new entry if the list does not have one with the same id.
 func update_entry(p_id: String, p_data: TickDebug.ValueData) -> void:
 	if !p_data:
 		return

@@ -36,13 +36,10 @@ func _enter_tree() -> void:
 
 
 func _on_project_settings_changed() -> void:
-	# FIXME: this is called when settings are first loaded, which creates
-	# an editor dock before that actual intended one is created
 	if settings.get_disable_editor_dock():
 		_remove_editor_dock()
 	else:
 		if dock_scene || dock == null:
-			push_warning("Constructing editor dock from settings change")
 			_construct_editor_dock()
 		if debugger_plugin != null:
 			debugger_plugin.set(&"dock", dock_scene)
@@ -55,9 +52,9 @@ func _exit_tree() -> void:
 
 
 func _construct_editor_dock() -> void:
-	push_warning("Creating editor dock")
-	if dock_scene != null:
-		push_warning("Removing editor dock " + str(dock_scene.get_instance_id()))
+	if dock_scene != null && dock == null:
+		return
+	elif dock_scene == null || dock == null:
 		_remove_editor_dock()
 	
 	dock_scene = preload(
