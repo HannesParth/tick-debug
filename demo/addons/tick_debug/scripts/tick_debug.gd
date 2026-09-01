@@ -432,7 +432,7 @@ class ValueData:
 			midpoint_value = p_value
 			average = p_value
 			total_sum = track_type.zero_value()
-			total_count = track_type.zero_value()
+			total_count = 0
 	
 	
 	## Updates the value tracked with this data.

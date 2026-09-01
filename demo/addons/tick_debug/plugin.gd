@@ -93,7 +93,6 @@ func _remove_editor_dock() -> void:
 	if dock_scene != null:
 		dock_scene.queue_free()
 		dock_scene = null
-		push_error("Removing dock")
 
 
 func _remove_debugger_plugin() -> void:
