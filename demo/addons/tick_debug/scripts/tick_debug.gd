@@ -10,26 +10,6 @@ extends Node
 ## [method TickDebug.register_track_type].
 
 
-# TODO:
-# - get some good screenshots -> in process, test in NPNG
-# - write GitHub README
-#   - don't forget to explain how the debug bridge works, message queue and stuff
-#   - explain about class name usage in TickDebug
-#   - give heads up that upon first adding the folder, there are probably a bunch
-#     of parse errors, because the Autoload doesn't exist till plugin activation
-#   - explain that there is no enum Variant.Type, and that passing one to track 
-#     will either use the direct int key, or use Enum.keys()[variable]
-#   - How to install section!
-# - create GitHub Release -> 1.0.0
-# - upload to asset lib and store
-# - advertize on reddit and godot discord
-#
-# Todo for 1.1:
-# - complex line graph inspired by https://store.godotengine.org/asset/jeditor/debug-graph/
-# - color history "graph"
-# - add an option for rolling window average
-
-
 ## Emitted at the end of a frame, when a tracking value was added or updated 
 ## that frame.
 signal _tracking_changed_this_frame()
