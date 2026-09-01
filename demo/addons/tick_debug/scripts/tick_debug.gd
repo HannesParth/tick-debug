@@ -378,13 +378,29 @@ func _unhandled_key_input(event: InputEvent) -> void:
 ## graph. To set the history size, see 
 ## [code]debug/tick_debug/value_history_size[/code] in the project settings.
 class ValueData:
+	## The current raw value.
 	var value: Variant
+	
+	## The lowest value since tracking of this value started.
 	var min_value: Variant
+	
+	## The highest value since tracking of this value started
 	var max_value: Variant
+	
+	## The midpoint between the min and max value, calculated every time one
+	## of them changes.
 	var midpoint_value: Variant
 	
+	## The average since tracking of this value started, calculated every time
+	## this value is tracked.
 	var average: Variant
+	
+	## The sum of all values since tracking of this value started. [br]
+	## Used for the average calculation in [TiDeTrackType] for numeric values.
 	var total_sum: Variant
+	
+	## The current total count of values added to the total_sum. [br]
+	## Used for the average calculation in [TiDeTrackType] for numeric values.
 	var total_count: int
 	
 	@warning_ignore("inferred_declaration")
@@ -393,9 +409,12 @@ class ValueData:
 	var _midpoint_disabled: bool = false
 	var _graph_disabled: bool = false
 	
+	## Type wrapper for this value, containing type-specific functions.
 	var track_type: TiDeTrackType = null
 	
 	
+	## Initializes this data object and gets the relevant settings. [br]
+	## Value-specific settings are only fetched here.
 	func _init(p_value: Variant) -> void:
 		value = p_value
 		track_type = TickDebug._find_track_type(p_value)
@@ -416,6 +435,7 @@ class ValueData:
 			total_count = track_type.zero_value()
 	
 	
+	## Updates the value tracked with this data.
 	func update(p_value: Variant) -> void:
 		value = p_value
 		
@@ -424,8 +444,9 @@ class ValueData:
 		
 		if track_type.supports_numeric():
 			_update_numeric(p_value)
-
-
+	
+	
+	## Updates all numeric-specific properties of this data.
 	func _update_numeric(p_value: Variant) -> void:
 		var minmax_changed: bool = false
 		
@@ -437,7 +458,7 @@ class ValueData:
 			minmax_changed = true
 		
 		if minmax_changed && !_midpoint_disabled:
-			track_type.calc_midpoint(min_value, max_value)
+			midpoint_value = track_type.calc_midpoint(min_value, max_value)
 		
 		if !_average_disabled:
 			average = track_type.calc_average(self)

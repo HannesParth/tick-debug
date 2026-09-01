@@ -39,9 +39,10 @@ func _on_project_settings_changed() -> void:
 	if settings.get_disable_editor_dock():
 		_remove_editor_dock()
 	else:
-		if dock_scene || dock == null:
+		if !dock_scene || !dock:
 			_construct_editor_dock()
-		if debugger_plugin != null:
+		
+		if debugger_plugin:
 			debugger_plugin.set(&"dock", dock_scene)
 		else:
 			_construct_debugger_plugin()
@@ -85,10 +86,14 @@ func _construct_debugger_plugin() -> void:
 
 
 func _remove_editor_dock() -> void:
-	remove_dock(dock)
-	dock.queue_free()
-	dock = null
-	dock_scene = null
+	if dock != null:
+		remove_dock(dock)
+		dock.queue_free()
+		dock = null
+	if dock_scene != null:
+		dock_scene.queue_free()
+		dock_scene = null
+		push_error("Removing dock")
 
 
 func _remove_debugger_plugin() -> void:
