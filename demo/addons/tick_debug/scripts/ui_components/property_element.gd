@@ -28,6 +28,16 @@ var custom_id: String
 @warning_ignore("inferred_declaration")
 var _settings := preload("res://addons/tick_debug/scripts/tick_debug_settings.gd")
 
+# The snapshots foldable does not get updated while it is folded.
+# If the user stop updating this value and then unfolds the foldable,
+# it would show zero-values.
+# Here we cache the last unset value update to the snapshots and apply it
+# when the foldable is unfolded.
+var _last_unset_min: Variant
+var _last_unset_max: Variant
+var _last_unset_midpoint: Variant
+var _last_unset_average: Variant
+
 
 func setup(p_custom_id: String, p_data: TickDebug.ValueData) -> void:
 	custom_id = p_custom_id
@@ -69,6 +79,7 @@ func update(p_data: TickDebug.ValueData) -> void:
 	if _color_display_rect.visible:
 		_color_display_rect.color = p_data.value
 	
+	# Format and set values when visible
 	if _snapshots_foldable.visible && !_snapshots_foldable.folded:
 		_min_value.set_value(p_data.str_format(p_data.min_value))
 		_max_value.set_value(p_data.str_format(p_data.max_value))
@@ -78,6 +89,15 @@ func update(p_data: TickDebug.ValueData) -> void:
 			_midpoint_value.set_value(p_data.str_format(p_data.midpoint_value))
 		if _average_value.visible:
 			_average_value.set_value(p_data.str_format(p_data.average))
+	
+	# Otherwise, cache values for eventual unfolding
+	else:
+		_last_unset_min = p_data.min_value
+		_last_unset_max = p_data.max_value
+		if _midpoint_value.visible:
+			_last_unset_midpoint = p_data.midpoint_value
+		if _average_value.visible:
+			_last_unset_average = p_data.average
 	
 	if _graph_foldable.visible:
 		_graph.update(p_data.value)
@@ -93,3 +113,15 @@ func _on_folding_changed(
 				if p_is_folded 
 				else Node.PROCESS_MODE_INHERIT
 		)
+	
+	if !p_is_folded:
+		if _last_unset_min != null:
+			_min_value.set_value(TickDebug._format_value(_last_unset_min))
+		if _last_unset_max != null:
+			_max_value.set_value(TickDebug._format_value(_last_unset_max))
+		
+		# If not hidden because of setting, see setup
+		if _midpoint_value.visible && _last_unset_midpoint != null:
+			_midpoint_value.set_value(TickDebug._format_value(_last_unset_midpoint))
+		if _average_value.visible && _last_unset_average != null:
+			_average_value.set_value(TickDebug._format_value(_last_unset_average))

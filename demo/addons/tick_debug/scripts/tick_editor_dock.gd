@@ -34,7 +34,6 @@ func _on_clear_pressed() -> void:
 	print("[TickDebug]: Tracking cleared!")
 
 
-# Called by the DebuggerPlugin
 func _on_runtime_started() -> void:
 	TickDebug._clear_tracking()
 	
@@ -42,6 +41,5 @@ func _on_runtime_started() -> void:
 	_clear_children()
 
 
-# Called by the DebuggerPlugin
 func _on_runtime_stopped() -> void:
 	refresh()

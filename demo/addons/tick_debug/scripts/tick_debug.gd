@@ -239,11 +239,11 @@ func _build_tracking_id(p_caller: Node, p_custom_id: StringName) -> String:
 	return "%s::%s" % [p_caller.get_instance_id(), p_custom_id]
 
 
-# Formats a value to a string using the format() method of a registered 
-# TiDeTrackType.
-# If none is registered, just uses str().
-# Only used as a fallback in cases where the TrackType instance of a ValueData 
-# is not directly accessible.
+## Formats a value to a string using the format() method of a registered 
+## TiDeTrackType.
+## If none is registered, just uses str().
+## Only used as a fallback in cases where the TrackType instance of a ValueData 
+## is not directly accessible, which is why it is private.
 func _format_value(p_value: Variant) -> String:
 	var track_type: TiDeTrackType = _find_track_type(p_value)
 	if track_type != null:

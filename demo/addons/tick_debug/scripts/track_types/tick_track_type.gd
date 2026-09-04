@@ -16,7 +16,7 @@ func is_object() -> bool:
 
 ## Return either int for builtin [Variant.Type] or string 
 ## (object, class or script name). [br]
-## Necassary for mapping.
+## Necessary for mapping.
 @abstract
 func get_type() -> Variant;
 
@@ -26,7 +26,9 @@ func get_type() -> Variant;
 func format(p_value: Variant) -> String;
 
 
-## Return a random value if this type. Mostly used for debugging and testing.
+## Return a random value if this type. Used for debugging and testing,
+## so returning a stub value here does not affect the normal operation
+## of the addon.
 @abstract
 func random_value() -> Variant;
 
