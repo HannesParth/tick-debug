@@ -1,6 +1,7 @@
 ![TickDebug: Display rapidly changing values](banner.png)
 
 > Currently only available on GitHub.
+> Tested with Godot Versions: `4.5.1`, `4.6.3`, `4.7.1`
 
 
 ## What is it?
