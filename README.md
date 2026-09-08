@@ -7,9 +7,9 @@
 
 TickDebug is a way to look at quickly changing values without filling your whole output console with prints or setting up and referencing a label for just one value.
 
-It offers an ingame panel and editor dock to look at your tracked values, which get there using functions of the provided autoload. 
+It offers an ingame panel and editor dock to look at your tracked values, which get there using functions of the provided Autoload. 
 
-**Currently, it is primarily for numbers.** Most buildin Variant types are supported for simple display, while anything numeric also gets the tracking of minimum, maximum, average and midpoint values. Integers and floats additionally show a simple line graph. \
+**Currently, it is primarily for numbers.** Most builtin Variant types are supported for simple display, while anything numeric also gets the tracking of minimum, maximum, average and midpoint values. Integers and floats additionally show a simple line graph. \
 A quick way to add support for other types yourself is provided.
 
 ### TLDR
@@ -31,7 +31,7 @@ Get the folder:
 \
 Activation:
 - Activate the addon at `Project > Project Settings > Plugins`
-- Reload your project (`Project > Reload Current Project`) to make everything initialize with the autoload correctly
+- Reload your project (`Project > Reload Current Project`) to make everything initialize with the Autoload correctly
 
 
 ## Usage Example
@@ -91,8 +91,8 @@ The only one of these classes that could ever be relevant for users is `TiDeTrac
 
 ## Supported types and supporting types
 
-When a value is tracked with TickDebug, a `ValueData` object is created to keep track of it (get it) (see [the bottom of the autoload](./demo/addons/tick_debug/scenes/tick_debug.gd) for that inner class). \
-I then needed to do a bunch of different things depending on the type of the tracked value and expanding `ValueData` itself easily got cluttered, so I added [Track Types](./demo/addons/tick_debug/scripts/track_types/tick_track_type.gd). This abstract class can be extended to provide all the calculations, checks and formatting needed for a type. Since only the return valeus of these functions is important, this means you can easily add support for other builtin types, objects and custom classes.
+When a value is tracked with TickDebug, a `ValueData` object is created to keep track of it (get it) (see [the bottom of the Autoload](./demo/addons/tick_debug/scenes/tick_debug.gd) for that inner class). \
+I then needed to do a bunch of different things depending on the type of the tracked value and expanding `ValueData` itself easily got cluttered, so I added [Track Types](./demo/addons/tick_debug/scripts/track_types/tick_track_type.gd). This abstract class can be extended to provide all the calculations, checks and formatting needed for a type. Since only the return values of these functions is important, this means you can easily add support for other builtin types, objects and custom classes.
 
 
 ### Default supported types
