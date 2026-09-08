@@ -50,6 +50,7 @@ size_flags_vertical = 0
 
 [node name="SnapshotsFoldable" type="FoldableContainer" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer" unique_id=1460522690]
 layout_mode = 2
+focus_mode = 0
 title = "Snapshots"
 title_text_overrun_behavior = 3
 
@@ -83,6 +84,7 @@ _default_value = "Average Value"
 
 [node name="GraphFoldable" type="FoldableContainer" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer" unique_id=892660333]
 layout_mode = 2
+focus_mode = 0
 title = "Graph"
 
 [node name="HBoxContainer" type="HBoxContainer" parent="VBoxContainer/ExtraInfoMargin/VBoxContainer/GraphFoldable" unique_id=1395072733]
