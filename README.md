@@ -1,42 +1,47 @@
 ![TickDebug: Display rapidly changing values](banner.png)
 
 > Currently only available on GitHub.
+
 > Tested with Godot Versions: `4.5.1`, `4.6.3`, `4.7.1`
 
 
 ## What is it?
 
-TickDebug is a way to look at quickly changing values without filling your whole output console with prints or setting up and referencing a label for just one value.
+**TickDebug** lets you **watch quickly changing values** on the fly, without `print()` spamming your output or setting up a label just to check one number.
 
-It offers an ingame panel and editor dock to look at your tracked values, which get there using functions of the provided Autoload. 
+It offers an **ingame panel** and **editor dock** to look at your tracked values, which get there using functions of the provided **Autoload**. 
 
-**Currently, it is primarily for numbers.** Most builtin Variant types are supported for simple display, while anything numeric also gets the tracking of minimum, maximum, average and midpoint values. Integers and floats additionally show a simple line graph. \
-A quick way to add support for other types yourself is provided.
+Currently, **numbers** have the biggest range of features. Most built-in Variant types are supported for simple display, while anything numeric also gets the tracking of **minimum**, **maximum**, **average** and **midpoint** values. Integers and floats additionally show a simple **line graph**. \
+A quick way to **add support for other types** yourself is provided.
 
-### TLDR
-- `TickDebug.track(value, caller, custom_id)` is the `print` of this addon, call it to log the value
-- `caller` is almost always `self`
-- `custom_id` can be whatever is easiest for you to read
-- Look at the editor dock to the right of your inspector, or press F4 in playmode to open the ingame panel (this can be changed by setting your own `"toggle_tick_debug_panel"` input action)
-- There are added project settings at `Project > Project Settings > Debug > TickDebug`
+### Quick use
+- Call `TickDebug.track(value, caller, custom_id)` anywhere to log a value, similar to how you'd use `print()`
+  - `caller` identifies where the value came from — almost always `self`
+  - `custom_id` is a label of your choice for easier identification
+- To see the tracked values, either open the **editor dock** next to your inspector, or press **F4** in play mode to open the **ingame panel** (rebindable via the `"toggle_tick_debug_panel"` input action)
+- Additional **settings** are available under `Project > Project Settings > Debug > TickDebug`
 
 
 ## How to install
 
-Get the folder:
-- No release yet: Click **Code** -> **Download Zip**
-- Release: download the latest release
-- Move the `tick_debug` folder in `demo/addons/` into your own `addons` folder
+Get the addon via one of these:
+- **[GitHub Releases](https://github.com/HannesParth/tick-debug/releases)** — always up to date, recommended if in doubt
+- Install directly through the **Asset Store** - check that the listed version matches the latest GitHub release; continue directly with **Activation**
+- Download from the **Asset Library** - same as with the Asset Store, verify the version first
+
+Then:
+- Move the `tick_debug` folder into your own `addons` folder
 - This will trigger some compilation errors, because a lot of the addon's scripts use its Autoload, which is only added after it is activated
 
 \
-Activation:
+**Activation:**
 - Activate the addon at `Project > Project Settings > Plugins`
 - Reload your project (`Project > Reload Current Project`) to make everything initialize with the Autoload correctly
 
 
 ## Usage Example
 
+Call the Autoload anywhere you want an update on your value. This is from an arcade vehicle controller:
 ```gdscript
 func _physics_process(_delta: float) -> void:
 	TickDebug.track(_drift_angle_offset, self, &"Drift Angle Offset")
@@ -44,7 +49,8 @@ func _physics_process(_delta: float) -> void:
 	TickDebug.track(_air_pitch_velocity, self, &"Air Pitch Vel")
 ```
 
-<img src="./docs/screenshots/usage_example_game-moved_ingame_dock_cut.png" width="auto" height ="600">
+The resulting editor dock looks like this:
+
 <img src="./docs/screenshots/usage_example_editor_dock.png" width="auto" height ="600">
 
 
@@ -53,7 +59,8 @@ func _physics_process(_delta: float) -> void:
 The editor dock is automatically cleared when you *start* playmode, not when you end it. This way, you can look at the last values without having to stay in or pause playmode. \
 If you don't want it or notice some unexpected performance impact, the editor dock can be disabled using the provided project settings at `Project Settings > Debug > TickDebug`.
 
-The values get from runtime to the editor dock using an [EditorDebuggerPlugin](https://docs.godotengine.org/en/stable/classes/class_editordebuggerplugin.html#class-editordebuggerplugin). **This connection has a message queue limit**, which can be reached if you track a lot of values at once. \
+The values get from runtime to the editor dock using an [EditorDebuggerPlugin](https://docs.godotengine.org/en/stable/classes/class_editordebuggerplugin.html#class-editordebuggerplugin).\
+**This connection has a message queue limit**, which can be reached if you track a lot of values at once. \
 TickDebug catches this and logs a single error message to the output console, instead of letting Godot's own `Too many messages!` error trigger.
 
 However, if this does happen, the editor dock **will have gaps between updates**. In this case, you will need to use the ingame panel for assured per-frame updates.
@@ -65,7 +72,7 @@ The ingame panel can also be **dragged** by its top bar.
 
 ## API
 
-All public functions are explained with in-editor documentation comments, so press F1 for the help menu and look at `TickDebug` to get something better than what I've added here, since this is more of a quick overview.
+All public functions are explained with in-editor documentation comments, so press F1 for the help menu and look at `TickDebug` to get more actionable details.
 
 \
 ``TickDebug.track(p_value: Variant, p_caller: Node, p_custom_id: StringName)``
@@ -92,13 +99,7 @@ The only one of these classes that could ever be relevant for users is `TiDeTrac
 
 ## Supported types and supporting types
 
-When a value is tracked with TickDebug, a `ValueData` object is created to keep track of it (get it) (see [the bottom of the Autoload](./demo/addons/tick_debug/scenes/tick_debug.gd) for that inner class). \
-I then needed to do a bunch of different things depending on the type of the tracked value and expanding `ValueData` itself easily got cluttered, so I added [Track Types](./demo/addons/tick_debug/scripts/track_types/tick_track_type.gd). This abstract class can be extended to provide all the calculations, checks and formatting needed for a type. Since only the return values of these functions is important, this means you can easily add support for other builtin types, objects and custom classes.
-
-
-### Default supported types
-
-...can be found in `/addons/tick_debug/scripts/track_types/`. \
+**Default supported types** can be found in `/addons/tick_debug/scripts/track_types/`. \
 These currently are:
 - `int`
 - `float`
@@ -110,12 +111,17 @@ These currently are:
 - `Vector3`
 - `Vector3i`
 
+\
+When a value is tracked with TickDebug, a `ValueData` object is created to keep track of it (get it) (see [the bottom of the Autoload](./demo/addons/tick_debug/scenes/tick_debug.gd) for that inner class). \
+[Track Types](./demo/addons/tick_debug/scripts/track_types/tick_track_type.gd) are then used to provide the operations necessary. This abstract class can be extended to provide all the calculations, checks and formatting needed for a type. Since only the return values of these functions are important, this means you can easily add support for other built-in types, objects and custom classes.
+
+
 #### Enum Disclaimer
 
-There is no `enum` in `Variant.Type`, since enums are pretty much just constants with int values. Because of that, just like when using `print` with an enum value, if you directly put an enum value into `TickDebug.track`, you will get an int. 
+There is no `enum` in `Variant.Type`, since enums are just constants with int values. Because of that, just like when using `print` with an enum value, if you directly put an enum value into `TickDebug.track`, you will get an int. 
 
 If you want the name of that value, use `MyEnum.keys()[my_enum_value]`. Just be aware that this returns a String, so you are effectively tracking a String. \
-There is, to my knowledge, no way to get the name of builtin enums like `Key` from `@GlobalScope`.
+There is, to my knowledge, no way to get the name of built-in enums like `Key` from `@GlobalScope`.
 
 
 ### How to add support for a type
