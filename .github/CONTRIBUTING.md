@@ -17,6 +17,7 @@ Thank you for considering contributing to this project! This document outlines h
 - Branch off of `main` for your changes.
 - Both the contributor and the reviewer are required to test all changes before a PR is approved.
 - Use the provided issue templates when reporting a bug or requesting a feature.
+- Before requesting a feature, please check if it already exists in the [Future feature ideas](https://github.com/HannesParth/tick-debug/issues/3) issue.
 
 ## Code Conventions
 
