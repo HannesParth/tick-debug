@@ -1,8 +1,8 @@
 ![TickDebug: Display rapidly changing values](banner.png)
 
-> Currently only available on GitHub.
+> Also available on the [Godot Asset Store](https://store.godotengine.org/asset/permotion/tickdebug/)!
 
-> Tested with Godot Versions: `4.5.1`, `4.6.3`, `4.7.1`
+> Successfully tested with Godot Versions: `4.6.3`, `4.7.1`
 
 
 ## What is it?
@@ -37,6 +37,9 @@ Then:
 **Activation:**
 - Activate the addon at `Project > Project Settings > Plugins`
 - Reload your project (`Project > Reload Current Project`) to make everything initialize with the Autoload correctly
+
+
+> This addon will not activate at Godot version 4.5.x or below, since the used `EditorDock` class was introduced with 4.6
 
 
 ## Usage Example
